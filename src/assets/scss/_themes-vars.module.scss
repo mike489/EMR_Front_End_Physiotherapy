@@ -1,0 +1,151 @@
+// ==============================|| LIGHT THEME ||============================== //
+
+// Paper & background
+$paper: #ffffff;
+$paper2: #000000;
+$background: #f5f6fa;
+
+// Primary (Main: #7C51A3)
+$primaryLight: #b48bd0; // softer tint
+$primaryMain: #7c51a3;
+$primaryDark: #57397a; // deeper tone
+$primary200: #d8c5ec; // light accent for highlights
+$primary800: #4a2b69; // very deep tone for hover or shadows
+
+// Secondary (Main: #FDD34F)
+$secondaryLight_icon: #fff9e1; // subtle yellow highlight for icons
+$secondaryLight: #fff7cc; // gentle background accent
+$secondaryMain: #fdd34f; // main accent color
+$secondaryDark: #d8ac18; // darker gold
+$secondaryDark_icon_hover: #e6b821; // hover effect tone
+$secondary200: #ffec99; // lighter accent for highlights
+$secondary800: #9c7c1a; // deeper yellow-brown for contrast
+
+// Success Colors
+$successLight: #b9f6ca;
+$success200: #69f0ae;
+$successMain: #00e676;
+$successDark: #00c853;
+
+// Error
+$errorLight: #ef9a9a;
+$errorMain: #f44336;
+$errorDark: #c62828;
+
+// Orange
+$orangeLight: #fbe9e7;
+$orangeMain: #ffab91;
+$orangeDark: #d84315;
+
+// Warning
+$warningLight: #fff8e1;
+$warningMain: #ffe57f;
+$warningDark: #ffc107;
+
+// Grey
+$grey50: #f8fafc;
+$grey100: #eef2f6;
+$grey200: #cdd5df;
+$grey300: #c1cad4;
+$grey500: #697586;
+$grey600: #4b5565;
+$grey700: #364152;
+$grey900: #121926;
+
+// ==============================|| DARK THEME VARIANTS ||============================== //
+
+// Paper & background
+$darkBackground: #141414ee;
+$darkPaper: #1a1a1c;
+
+// Levels
+$darkLevel1: #2a2340;
+$darkLevel2: #201b35;
+
+// Primary (Dark)
+$darkPrimaryLight: #b48bd0;
+$darkPrimaryMain: #9b6bc0;
+$darkPrimaryDark: #57397a;
+$darkPrimary200: #d8c5ec;
+$darkPrimary800: #3c1f5a;
+
+// Secondary (Dark)
+$darkSecondaryLight: #fff0b3;
+$darkSecondaryMain: #fdd34f;
+$darkSecondaryDark: #d8ac18;
+$darkSecondary200: #ffec99;
+$darkSecondary800: #9c7c1a;
+
+// Text variants
+$darkTextTitle: #f0e7ff;
+$darkTextPrimary: #e1d4f2;
+$darkTextSecondary: #c5b4e3;
+
+// ==============================|| JAVASCRIPT EXPORTS ||============================== //
+
+:export {
+  paper: $paper;
+  paper2: $paper2;
+
+  primaryLight: $primaryLight;
+  primary200: $primary200;
+  primaryMain: $primaryMain;
+  primaryDark: $primaryDark;
+  primary800: $primary800;
+
+  secondaryLight: $secondaryLight;
+  secondaryLight_icon: $secondaryLight_icon;
+  secondary200: $secondary200;
+  secondaryMain: $secondaryMain;
+  secondaryDark: $secondaryDark;
+  secondaryDark_icon_hover: $secondaryDark_icon_hover;
+  secondary800: $secondary800;
+
+  successLight: $successLight;
+  success200: $success200;
+  successMain: $successMain;
+  successDark: $successDark;
+
+  errorLight: $errorLight;
+  errorMain: $errorMain;
+  errorDark: $errorDark;
+
+  orangeLight: $orangeLight;
+  orangeMain: $orangeMain;
+  orangeDark: $orangeDark;
+
+  warningLight: $warningLight;
+  warningMain: $warningMain;
+  warningDark: $warningDark;
+
+  grey50: $grey50;
+  grey100: $grey100;
+  grey200: $grey200;
+  grey300: $grey300;
+  grey500: $grey500;
+  grey600: $grey600;
+  grey700: $grey700;
+  grey900: $grey900;
+
+  darkPaper: $darkPaper;
+  darkBackground: $darkBackground;
+
+  darkLevel1: $darkLevel1;
+  darkLevel2: $darkLevel2;
+
+  darkTextTitle: $darkTextTitle;
+  darkTextPrimary: $darkTextPrimary;
+  darkTextSecondary: $darkTextSecondary;
+
+  darkPrimaryLight: $darkPrimaryLight;
+  darkPrimaryMain: $darkPrimaryMain;
+  darkPrimaryDark: $darkPrimaryDark;
+  darkPrimary200: $darkPrimary200;
+  darkPrimary800: $darkPrimary800;
+
+  darkSecondaryLight: $darkSecondaryLight;
+  darkSecondaryMain: $darkSecondaryMain;
+  darkSecondaryDark: $darkSecondaryDark;
+  darkSecondary200: $darkSecondary200;
+  darkSecondary800: $darkSecondary800;
+}

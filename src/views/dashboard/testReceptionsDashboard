@@ -1,0 +1,466 @@
+import { useState } from 'react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+  Button,
+  Chip,
+  TextField,
+  Avatar,
+  IconButton,
+  Box,
+  Grid,
+  Paper,
+  Divider,
+  Badge,
+} from '@mui/material';
+import {
+  CalendarToday,
+  Schedule,
+  People,
+  Phone,
+  Search,
+  Add,
+  Visibility,
+  Warning,
+  CheckCircle,
+  Person,
+  TrendingUp,
+  Description,
+  Settings,
+  EventAvailable,
+} from '@mui/icons-material';
+
+const ReceptionsDashboard = () => {
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split('T')[0],
+  );
+
+  const todayStats = {
+    totalAppointments: 24,
+    checkedIn: 18,
+    waiting: 4,
+    completed: 14,
+  };
+
+  const upcomingAppointments = [
+    {
+      id: 1,
+      time: '09:00 AM',
+      patient: 'Sarah Johnson',
+      type: 'Routine Eye Exam',
+      status: 'checked-in',
+      phone: '(555) 123-4567',
+    },
+    {
+      id: 2,
+      time: '09:30 AM',
+      patient: 'Michael Chen',
+      type: 'Contact Lens Fitting',
+      status: 'waiting',
+      phone: '(555) 234-5678',
+    },
+    {
+      id: 3,
+      time: '10:00 AM',
+      patient: 'Emily Rodriguez',
+      type: 'Glaucoma Follow-up',
+      status: 'scheduled',
+      phone: '(555) 345-6789',
+    },
+    {
+      id: 4,
+      time: '10:30 AM',
+      patient: 'David Wilson',
+      type: 'Diabetic Eye Screening',
+      status: 'scheduled',
+      phone: '(555) 456-7890',
+    },
+  ];
+
+  const waitingPatients = [
+    {
+      id: 1,
+      name: 'Sarah Johnson',
+      checkedInAt: '08:45 AM',
+      waitTime: '15 min',
+      priority: 'normal',
+    },
+    {
+      id: 2,
+      name: 'Michael Chen',
+      checkedInAt: '09:15 AM',
+      waitTime: '45 min',
+      priority: 'urgent',
+    },
+  ];
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'checked-in':
+        return 'success';
+      case 'waiting':
+        return 'warning';
+      case 'completed':
+        return 'primary';
+      default:
+        return 'default';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'checked-in':
+        return <Person sx={{ fontSize: 16 }} />;
+      case 'waiting':
+        return <Schedule sx={{ fontSize: 16 }} />;
+      case 'completed':
+        return <CheckCircle sx={{ fontSize: 16 }} />;
+      default:
+        return <CalendarToday sx={{ fontSize: 16 }} />;
+    }
+  };
+
+  return (
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5', p: 3 }}>
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={3}>
+            <CardContent>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Total Appointments
+                </Typography>
+                <CalendarToday color="action" />
+              </Box>
+              <Typography variant="h4" component="div" sx={{ mt: 1 }}>
+                {todayStats.totalAppointments}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Today's schedule
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={3}>
+            <CardContent>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Checked In
+                </Typography>
+                <Person color="success" />
+              </Box>
+              <Typography variant="h4" component="div" sx={{ mt: 1 }}>
+                {todayStats.checkedIn}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Patients arrived
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={3}>
+            <CardContent>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Currently Waiting
+                </Typography>
+                <Schedule color="warning" />
+              </Box>
+              <Typography variant="h4" component="div" sx={{ mt: 1 }}>
+                {todayStats.waiting}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                In waiting room
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={3}>
+            <CardContent>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Completed
+                </Typography>
+                <CheckCircle color="primary" />
+              </Box>
+              <Typography variant="h4" component="div" sx={{ mt: 1 }}>
+                {todayStats.completed}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Appointments done
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Main Content */}
+      <Grid container spacing={3}>
+        {/* Left Column - Appointments */}
+        <Grid item xs={12} lg={8}>
+          <Card elevation={3} sx={{ mb: 3 }}>
+            <CardHeader
+              title="Today's Appointments"
+              subheader="Manage patient appointments and check-ins"
+              action={
+                <Button variant="contained" startIcon={<Add />}>
+                  New Appointment
+                </Button>
+              }
+            />
+            <CardContent>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {upcomingAppointments.map((appointment) => (
+                  <Paper
+                    key={appointment.id}
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography
+                        variant="body1"
+                        fontWeight="medium"
+                        sx={{ minWidth: 80 }}
+                      >
+                        {appointment.time}
+                      </Typography>
+                      <Box>
+                        <Typography variant="body1" fontWeight="medium">
+                          {appointment.patient}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {appointment.type}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Chip
+                        icon={getStatusIcon(appointment.status)}
+                        label={appointment.status.replace('-', ' ')}
+                        color={getStatusColor(appointment.status)}
+                        size="small"
+                      />
+                      <IconButton size="small">
+                        <Phone />
+                      </IconButton>
+                      <IconButton size="small">
+                        <Description />
+                      </IconButton>
+                    </Box>
+                  </Paper>
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card elevation={3}>
+            <CardHeader title="Quick Actions" />
+            <CardContent>
+              <Grid container spacing={2}>
+                <Grid item xs={6} sm={3}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{ py: 3, flexDirection: 'column' }}
+                    startIcon={<People sx={{ mb: 1, fontSize: 30 }} />}
+                  >
+                    Patient Search
+                  </Button>
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{ py: 3, flexDirection: 'column' }}
+                    startIcon={<CalendarToday sx={{ mb: 1, fontSize: 30 }} />}
+                  >
+                    Schedule
+                  </Button>
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{ py: 3, flexDirection: 'column' }}
+                    startIcon={<Visibility sx={{ mb: 1, fontSize: 30 }} />}
+                  >
+                    Insurance
+                  </Button>
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{ py: 3, flexDirection: 'column' }}
+                    startIcon={<Description sx={{ mb: 1, fontSize: 30 }} />}
+                  >
+                    Reports
+                  </Button>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Right Column - Waiting Room & Search */}
+        <Grid item xs={12} lg={4}>
+          {/* Patient Search */}
+          <Card elevation={3} sx={{ mb: 3 }}>
+            <CardHeader title="Patient Search" />
+            <CardContent>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TextField
+                  placeholder="Search by name, phone, or ID..."
+                  InputProps={{
+                    startAdornment: (
+                      <Search sx={{ mr: 1, color: 'text.secondary' }} />
+                    ),
+                  }}
+                  fullWidth
+                />
+                <Button variant="contained" fullWidth>
+                  Search Patients
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+
+          {/* Waiting Room */}
+          <Card elevation={3} sx={{ mb: 3 }}>
+            <CardHeader
+              title={
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <TrendingUp sx={{ mr: 1 }} />
+                  Waiting Room
+                </Box>
+              }
+              subheader="Patients currently waiting"
+            />
+            <CardContent>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {waitingPatients.map((patient) => (
+                  <Paper key={patient.id} variant="outlined" sx={{ p: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Box>
+                        <Typography variant="body1" fontWeight="medium">
+                          {patient.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Checked in: {patient.checkedInAt}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="body1" fontWeight="medium">
+                          {patient.waitTime}
+                        </Typography>
+                        {patient.priority === 'urgent' && (
+                          <Chip
+                            icon={<Warning />}
+                            label="Urgent"
+                            color="error"
+                            size="small"
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                  </Paper>
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+
+          {/* Today's Summary */}
+          <Card elevation={3}>
+            <CardHeader title="Today's Summary" />
+            <CardContent>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Average Wait Time
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    12 minutes
+                  </Typography>
+                </Box>
+                <Divider />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No-Shows
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    2
+                  </Typography>
+                </Box>
+                <Divider />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Walk-ins
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    3
+                  </Typography>
+                </Box>
+                <Divider />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Rescheduled
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    1
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
+export default ReceptionsDashboard;
