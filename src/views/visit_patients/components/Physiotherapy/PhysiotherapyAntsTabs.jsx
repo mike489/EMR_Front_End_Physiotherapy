@@ -59,10 +59,10 @@ export const PhysiotherapyTabData = [
     label: 'Cervical',
     component: 'CervicalTab',
   },
-  hasPermission('read_ocular_motility') && {
-    label: 'Wrist & Hand',
-    component: 'WristHandTab',
-  },
+  // hasPermission('read_ocular_motility') && {
+  //   label: 'Wrist & Hand',
+  //   component: 'WristHandTab',
+  // },
   hasPermission('read_intraocular_pressure') && {
     label: 'Lumbar',
     component: 'LumbarTab',
