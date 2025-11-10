@@ -105,7 +105,7 @@ const BedTable = ({ beds, onEdit, onDelete, refreshBeds }) => {
         setSelectedPatient("");
         setNotes("");
       } else {
-        toast.warning(data.message || "Assignment failed");
+        toast.warning(data.data.message || "Assignment failed");
       }
     } catch (error) {
       toast.error(error.message || "Error assigning patient");
@@ -146,7 +146,7 @@ const BedTable = ({ beds, onEdit, onDelete, refreshBeds }) => {
         setTransferDialog(false);
         setTransferBed("");
       } else {
-        toast.warning(data.message || "Transfer failed");
+        toast.warning(data.data.message || "Transfer failed");
       }
     } catch (error) {
       toast.error(error.message || "Error transferring patient");
@@ -190,20 +190,6 @@ const BedTable = ({ beds, onEdit, onDelete, refreshBeds }) => {
                           }}
                         >
                           <AssignmentInd />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-
-                    {hasPermission("create_bed_assignment") && (
-                      <Tooltip title="Transfer">
-                        <IconButton
-                          color="info.dark"
-                          onClick={() => {
-                            setSelectedBed(bed);
-                            setTransferDialog(true);
-                          }}
-                        >
-                          <SwapHoriz />
                         </IconButton>
                       </Tooltip>
                     )}
@@ -287,43 +273,6 @@ const BedTable = ({ beds, onEdit, onDelete, refreshBeds }) => {
         </DialogActions>
       </Dialog>
 
-      {/* Transfer Bed Dialog */}
-      <Dialog
-        open={transferDialog}
-        onClose={() => setTransferDialog(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Transfer Patient to Another Bed</DialogTitle>
-        <DialogContent sx={{ mt: 1 }}>
-          <FormControl fullWidth>
-            <InputLabel>New Bed</InputLabel>
-            <Select
-              value={transferBed}
-              onChange={(e) => setTransferBed(e.target.value)}
-              label="New Bed"
-            >
-              {beds
-                .filter((b) => b.id !== selectedBed?.id)
-                .map((b) => (
-                  <MenuItem key={b.id} value={b.id}>
-                    {b.bed_number} ({b.ward?.name})
-                  </MenuItem>
-                ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setTransferDialog(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleTransferBed}
-            disabled={!hasPermission("create_bed_assignment")}
-          >
-            Transfer
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

@@ -108,7 +108,7 @@ const Users = Loadable(lazy(() => import('views/users')));
 const Patients = Loadable(lazy(() => import('views/patients')));
 const PaymentRequest = Loadable(lazy(() => import('views/payement-request')));
 const DoctorAppointment = Loadable(
-  lazy(() => import('views/Doctor_appointment')),
+  lazy(() => import('views/DoctorsList/components/DoctorAvailabilityTab')),
 );
 
 const CarePlan = Loadable(
@@ -145,6 +145,13 @@ const ScheduleDoctor = Loadable(
 // const DoctorAvailabilityTab = Loadable(lazy(() => import('views/DoctorsList/components/DoctorAvailabilityTab')));
 const PatientApp = Loadable(lazy(() => import('views/Patientapp')));
 const ViewPatientApp = Loadable(lazy(() => import('views/Patientapp/view')));
+
+const WebsiteRequests = Loadable(
+  lazy(() => import('views/website-requests/index')),
+);
+const ViewWebsiteRequests = Loadable(
+  lazy(() => import('views/website-requests/view')),
+);
 
 const VisitPatients = Loadable(lazy(() => import('views/visit_patients')));
 
@@ -240,6 +247,23 @@ const GlassesPrescription = Loadable(
 const MedicinesInventory = Loadable(
   lazy(() => import('views/visit_patients/components/medicines/MedicinesTab')),
 );
+const SickLeaves = Loadable(lazy(() => import('views/sick-leaves')));
+const NurseLogs = Loadable(lazy(() => import('views/nurse-logs')));
+
+// const Referrals = Loadable(lazy(() => import('views/referrals')));
+const NextVisitAppointment = Loadable(
+  lazy(() => import('views/visit_patients/components/NextAppointmentTab')),
+);
+const ReferralOUt = Loadable(
+  lazy(() => import('views/referrals/referral-out')),
+);
+const BedLists = Loadable(lazy(() => import('views/beds/bed-list')));
+const MedicalCenter = Loadable(lazy(() => import('views/medical-centers')));
+const OperativeNotes = Loadable(lazy(() => import('views/operative-notes')));
+const DischargeSummary = Loadable(lazy(() => import('views/discharge-summary')));
+const PreoperativePreparation = Loadable(lazy(() => import('views/preoperative')));
+
+
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -305,6 +329,38 @@ const MainRoutes = {
       ),
     },
     {
+      path: 'operative-notes',
+      element: (
+        <Protected>
+          <OperativeNotes />
+        </Protected>
+      ),
+    },
+     {
+      path: 'discharge-summary',
+      element: (
+        <Protected>
+          <DischargeSummary />
+        </Protected>
+      ),
+    },
+     {
+      path: 'preoperative-preparation',
+      element: (
+        <Protected>
+          <PreoperativePreparation />
+        </Protected>
+      ),
+    },
+    {
+      path: 'referral_out',
+      element: (
+        <Protected>
+          <ReferralOUt />
+        </Protected>
+      ),
+    },
+    {
       path: 'my_surgery_requests',
       element: (
         <Protected>
@@ -345,6 +401,14 @@ const MainRoutes = {
       ),
     },
     {
+      path: 'medical-centers',
+      element: (
+        <Protected>
+          <MedicalCenter />
+        </Protected>
+      ),
+    },
+    {
       path: 'radiology',
       element: (
         <Protected>
@@ -365,6 +429,14 @@ const MainRoutes = {
       element: (
         <Protected>
           <Beds />
+        </Protected>
+      ),
+    },
+    {
+      path: 'bed-lists',
+      element: (
+        <Protected>
+          <BedLists />
         </Protected>
       ),
     },
@@ -1187,10 +1259,50 @@ const MainRoutes = {
       ),
     },
     {
+      path: 'sick_leaves',
+      element: (
+        <Protected>
+          <SickLeaves />
+        </Protected>
+      ),
+    },
+    {
+      path: 'nurse_logs',
+      element: (
+        <Protected>
+          <NurseLogs />
+        </Protected>
+      ),
+    },
+    {
       path: 'medicines_inventory',
       element: (
         <Protected>
           <MedicinesInventory />
+        </Protected>
+      ),
+    },
+    {
+      path: 'website_requests',
+      element: (
+        <Protected>
+          <WebsiteRequests />
+        </Protected>
+      ),
+    },
+    {
+      path: 'website_requests/view',
+      element: (
+        <Protected>
+          <ViewWebsiteRequests />
+        </Protected>
+      ),
+    },
+    {
+      path: 'patient_scheduling',
+      element: (
+        <Protected>
+          <NextVisitAppointment />
         </Protected>
       ),
     },

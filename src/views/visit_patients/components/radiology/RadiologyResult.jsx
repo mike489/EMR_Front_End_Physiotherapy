@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -15,10 +15,11 @@ import {
   Tooltip,
   IconButton,
   Chip,
-  useTheme,
+  Stack,
   Modal,
   Backdrop,
   Fade,
+  MenuItem,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -26,142 +27,211 @@ import Backend from 'services/backend';
 import GetToken from 'utils/auth-token';
 import { toast, ToastContainer } from 'react-toastify';
 
-const RadiologyResult = ({ visit }) => {
-  const [radiologyResults, setRadiologyResults] = React.useState([]);
-  const [filteredResults, setFilteredResults] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [openModal, setOpenModal] = React.useState(false);
-  const [selectedImage, setSelectedImage] = React.useState('');
-  const theme = useTheme();
+const RadiologyResult = () => {
+  const [visits, setVisits] = useState([]);
+  const [selectedVisit, setSelectedVisit] = useState('');
+  const [radiologyResults, setRadiologyResults] = useState([]);
+  const [filteredResults, setFilteredResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
 
-  const handleFetchingRadiology = async () => {
-    const token = await GetToken();
-    const Api = `${Backend.auth}${Backend.patientRadiologies}/${visit.visit_id}`;
-    const header = {
-      Authorization: `Bearer ${token}`,
-      accept: 'application/json',
-      'Content-Type': 'application/json',
-    };
-
+  // Fetch all patient visits
+  const fetchVisits = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await fetch(Api, { method: 'GET', headers: header });
-      const responseData = await response.json();
+      const token = await GetToken();
+      const Api = `${Backend.auth}${Backend.getVisits}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      };
+      const response = await fetch(Api, { method: 'GET', headers });
+      const data = await response.json();
 
-      if (responseData.success) {
-        const data = responseData.data || [];
-        setRadiologyResults(data);
-        setFilteredResults(data);
+      if (data.success) {
+        const visitData = Array.isArray(data.data?.data) ? data.data.data : [];
+        setVisits(visitData);
+        if (visitData.length) setSelectedVisit(visitData[0].visit_id); // default first visit
       } else {
-        toast.warning(responseData.message);
+        toast.warning(data.message || 'No visits found');
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || 'Error fetching visits');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = (event) => {
-    const query = event.target.value.toLowerCase();
+  // Fetch radiology results for selected visit
+ const fetchRadiologyResults = async (visitId) => {
+  setLoading(true);
+  try {
+    const token = await GetToken();
+
+    if (!visitId) {
+      // All Patients: fetch results for every visit
+      const allResults = [];
+      for (const v of visits) {
+        const Api = `${Backend.auth}${Backend.patientRadiologies}/${v.visit_id}`;
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        };
+        const response = await fetch(Api, { method: 'GET', headers });
+        const data = await response.json();
+        if (data.success) {
+          allResults.push(...(Array.isArray(data.data) ? data.data : []));
+        }
+      }
+      setRadiologyResults(allResults);
+      setFilteredResults(allResults);
+    } else {
+      // Single visit
+      const Api = `${Backend.auth}${Backend.patientRadiologies}/${visitId}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      };
+      const response = await fetch(Api, { method: 'GET', headers });
+      const data = await response.json();
+      if (data.success) {
+        const resultsArray = Array.isArray(data.data) ? data.data : [];
+        setRadiologyResults(resultsArray);
+        setFilteredResults(resultsArray);
+      } else {
+        setRadiologyResults([]);
+        setFilteredResults([]);
+        toast.warning(data.message || 'No radiology results found');
+      }
+    }
+  } catch (error) {
+    toast.error(error.message || 'Error fetching radiology results');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // Handle visit selection change
+  const handleVisitChange = (e) => {
+    const visitId = e.target.value;
+    setSelectedVisit(visitId);
+    fetchRadiologyResults(visitId);
+  };
+
+  // Handle search
+  const handleSearch = (e) => {
+    const query = e.target.value.toLowerCase();
     setSearchQuery(query);
     const filtered = radiologyResults.filter((test) =>
-      test.radiology_name.toLowerCase().includes(query),
+      test.radiology_name.toLowerCase().includes(query)
     );
     setFilteredResults(filtered);
   };
 
-  const handleImageClick = (imageUrl) => {
-    setSelectedImage(imageUrl);
+  // Open image modal
+  const handleImageClick = (url) => {
+    setSelectedImage(url);
     setOpenModal(true);
   };
 
+  // Close modal
   const handleCloseModal = () => {
     setOpenModal(false);
     setSelectedImage('');
   };
 
-  React.useEffect(() => {
-    handleFetchingRadiology();
+  useEffect(() => {
+    fetchVisits();
   }, []);
+
+  useEffect(() => {
+    if (selectedVisit) fetchRadiologyResults(selectedVisit);
+  }, [selectedVisit]);
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="400px"
-      >
-        <CircularProgress aria-label="Loading radiology Result" />
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
       </Box>
     );
   }
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#fafafa' }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ mb: 3 }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 'bold',
-              color: 'primary.main',
-            }}
-          >
-            Radiology Results
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Review results from your radiology visits
-          </Typography>
-        </Box>
-        <Box>
-          <TextField
-            variant="outlined"
-            size="small"
-            placeholder="Search radiology ..."
-            value={searchQuery}
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Box>
+      <Box mb={4}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+          Radiology Results
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Review results by visit
+        </Typography>
+      </Box>
+      {/* Header */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 3, flexWrap: 'wrap', gap: 2 }}>
+
+        {/* Visit Dropdown */}
+   <Box display="flex" flexDirection="column" gap={2} flex={0.5}>
+        <TextField
+          select
+          label="Select Visit"
+          value={selectedVisit}
+          onChange={handleVisitChange}
+          size="small"
+          sx={{ minWidth: 200 }}
+        >
+       
+          <MenuItem value="">
+            <em>All Patients</em>
+          </MenuItem>
+
+      
+          {visits.map((visit) => (
+            <MenuItem key={visit.visit_id || visit.id} value={visit.visit_id || visit.id}>
+              {visit.patient_name || `Visit ${visit.visit_id}`}
+            </MenuItem>
+          ))}
+        </TextField>
+
+   </Box>
+
+
+       <Stack direction="row" spacing={2} alignItems="center">
+        <TextField
+          size="small"
+          placeholder="Search radiology ..."
+          value={searchQuery}
+          onChange={handleSearch}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ minWidth: 200 }}
+        />
+
+       </Stack>
+        {/* Search */}
       </Box>
 
-      <Card
-        sx={{
-          borderRadius: 3,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          bgcolor: 'white',
-        }}
-      >
+      {/* Radiology Results List */}
+      <Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', bgcolor: 'white' }}>
         <CardContent sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Chip
-              label={`${filteredResults.length} result${filteredResults.length !== 1 ? 's' : ''}`}
-              size="small"
-              sx={{
-                ml: 2,
-                backgroundColor: 'primary.light',
-                color: 'white',
-                fontSize: '0.7rem',
-              }}
-            />
-          </Box>
-          <Divider sx={{ mb: 2, backgroundColor: 'grey.100' }} />
-          <Box sx={{ maxHeight: '400px', overflowY: 'auto' }}>
-            <List dense disablePadding>
+          <Chip
+            label={`${filteredResults.length} result${filteredResults.length !== 1 ? 's' : ''}`}
+            size="small"
+            sx={{ mb: 2, backgroundColor: 'primary.light', color: 'white' }}
+          />
+          <Divider sx={{ mb: 2, backgroundColor: 'grey.200' }} />
+
+          {filteredResults.length ? (
+            <List dense disablePadding sx={{ maxHeight: '400px', overflowY: 'auto' }}>
               {filteredResults.map((test) => (
                 <Paper
                   key={test.id}
@@ -173,193 +243,26 @@ const RadiologyResult = ({ visit }) => {
                     border: '1px solid',
                     borderColor: test.result ? 'success.main' : 'grey.300',
                     bgcolor: 'white',
-                    transition: 'all 0.2s ease',
                   }}
                 >
                   <ListItem alignItems="flex-start" disablePadding>
                     <ListItemText
                       primary={
-                        <Box
-                          sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
-                        >
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                           <Typography
                             variant="body1"
-                            sx={{
-                              fontWeight: test.result ? 'bold' : 'medium',
-                              color: test.result
-                                ? 'success.dark'
-                                : 'text.primary',
-                            }}
+                            sx={{ fontWeight: test.result ? 'bold' : 'medium', color: test.result ? 'success.dark' : 'text.primary' }}
                           >
                             {test.radiology_name}
                           </Typography>
                           {test.result && (
-                            <Chip
-                              label="Completed"
-                              size="small"
-                              sx={{
-                                ml: 2,
-                                backgroundColor: 'success.main',
-                                color: 'white',
-                                fontSize: '0.7rem',
-                              }}
-                            />
+                            <Chip label="Completed" size="small" sx={{ ml: 2, backgroundColor: 'success.main', color: 'white', fontSize: '0.7rem' }} />
                           )}
                         </Box>
                       }
                       secondary={
                         <Box sx={{ mt: 1 }}>
-                          {/* Result */}
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              mb: 0.5,
-                            }}
-                          >
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: 'text.secondary',
-                                fontWeight: 500,
-                                minWidth: '70px',
-                              }}
-                            >
-                              Result:
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontWeight: 600,
-                                color: test.result
-                                  ? 'text.primary'
-                                  : 'text.secondary',
-                                ml: 1,
-                              }}
-                              dangerouslySetInnerHTML={{
-                                __html: test.result || 'Pending',
-                              }}
-                            />
-                            {test.description && (
-                              <Tooltip
-                                title={test.description}
-                                placement="top"
-                                arrow
-                              >
-                                <IconButton
-                                  size="small"
-                                  sx={{ ml: 1 }}
-                                  aria-label={`Description for ${test.radiology_name}`}
-                                >
-                                  <InfoOutlinedIcon
-                                    fontSize="small"
-                                    color="action"
-                                  />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Box>
-
-                          {/* File preview / download */}
-                          {test.file && (
-                            <Box sx={{ mt: 1 }}>
-                              {test.file?.mime_type?.startsWith('image/') ? (
-                                <Box
-                                  component="img"
-                                  src={test.file.url}
-                                  alt={test.radiology_name}
-                                  onClick={() =>
-                                    handleImageClick(test.file.url)
-                                  }
-                                  sx={{
-                                    maxWidth: 200,
-                                    maxHeight: 200,
-                                    borderRadius: 2,
-                                    border: '1px solid',
-                                    borderColor: 'grey.300',
-                                    mt: 1,
-                                    cursor: 'pointer',
-                                    '&:hover': {
-                                      opacity: 0.8,
-                                    },
-                                  }}
-                                />
-                              ) : test.file?.mime_type === 'application/pdf' ? (
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                  <a
-                                    href={test.file.url}
-                                    target="_blank" // Opens in a new tab
-                                    rel="noopener noreferrer" // Security best practice
-                                    style={{
-                                      color: '#1976d2',
-                                      textDecoration: 'none',
-                                      fontWeight: 500,
-                                    }}
-                                  >
-                                    📄 View PDF
-                                  </a>
-                                </Typography>
-                              ) : (
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                  sx={{ mt: 1 }}
-                                >
-                                  No file type found
-                                </Typography>
-                              )}
-                            </Box>
-                          )}
-
-                          {/* Technician */}
-                          {test.technician && (
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                mb: 0.5,
-                              }}
-                            >
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  color: 'text.secondary',
-                                  fontWeight: 500,
-                                  minWidth: '70px',
-                                }}
-                              >
-                                Technician:
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ ml: 1 }}
-                              >
-                                {test.technician}
-                              </Typography>
-                            </Box>
-                          )}
-
-                          {/* Date */}
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: 'text.secondary',
-                                fontWeight: 500,
-                                minWidth: '70px',
-                              }}
-                            >
-                              Date:
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ ml: 1 }}
-                            >
-                              {test.created_at}
-                            </Typography>
-                          </Box>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }} dangerouslySetInnerHTML={{ __html: test.result || 'Pending' }} />
                         </Box>
                       }
                     />
@@ -367,28 +270,11 @@ const RadiologyResult = ({ visit }) => {
                 </Paper>
               ))}
             </List>
-          </Box>
-          {filteredResults.length === 0 && (
-            <Box
-              textAlign="center"
-              py={4}
-              sx={{
-                backgroundColor: 'grey.50',
-                borderRadius: 2,
-                border: '1px dashed',
-                borderColor: 'grey.300',
-              }}
-            >
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                {searchQuery
-                  ? 'No results match your search'
-                  : 'No radiology results available'}
+          ) : (
+            <Box textAlign="center" py={4}>
+              <Typography variant="body1" color="text.secondary">
+                {searchQuery ? 'No results match your search' : 'No radiology results available for this visit'}
               </Typography>
-              {!searchQuery && (
-                <Typography variant="body2" color="text.secondary">
-                  Radiology results will appear here once they are available.
-                </Typography>
-              )}
             </Box>
           )}
         </CardContent>
@@ -400,9 +286,7 @@ const RadiologyResult = ({ visit }) => {
         onClose={handleCloseModal}
         closeAfterTransition
         BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 500,
-        }}
+        BackdropProps={{ timeout: 500 }}
       >
         <Fade in={openModal}>
           <Box
@@ -423,15 +307,12 @@ const RadiologyResult = ({ visit }) => {
             <img
               src={selectedImage}
               alt="Preview"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '80vh',
-                borderRadius: '8px',
-              }}
+              style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: '8px' }}
             />
           </Box>
         </Fade>
       </Modal>
+
       <ToastContainer />
     </Box>
   );

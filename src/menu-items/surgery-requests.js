@@ -29,8 +29,8 @@ export const surgeryRequest = () => {
 
   const orderedPermissions = [
     'read_surgery_request',
-    'read_room',
     'read_laboratory_test_group',
+    'read_room',
     'read_lens_type',
     'read_lens_material',
     'read_monitoring_period',

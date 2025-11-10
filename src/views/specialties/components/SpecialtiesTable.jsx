@@ -1,80 +1,72 @@
+// src/views/specialties/components/SpecialtiesTable.jsx
 import React from "react";
 import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   Paper,
   IconButton,
   Tooltip,
-  Typography,
-  Box,
-  Button,
+  Chip,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
-import hasPermission from "utils/auth/hasPermission";
+import Fallbacks from "utils/components/Fallbacks";
 
-const SpecialtiesTable = ({ specialties, onEdit, onDelete }) => {
+
+export default function SpecialtiesTable({ specialties, onEdit, onDelete }) {
   return (
-    <Box sx={{ p: 3 }}>
-      <TableContainer
-        component={Paper}
-        sx={{ borderRadius: 3, boxShadow: 0, border: "1px solid #dddddd" }}
-      >
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ color: "black", fontWeight: "bold" }}>Name</TableCell>
-              <TableCell sx={{ color: "black", fontWeight: "bold" }}>Description</TableCell>
-              <TableCell sx={{ color: "black", fontWeight: "bold" }} align="center">
-                Actions
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {specialties.length > 0 ? (
-              specialties.map((ward) => (
-                <TableRow key={ward.id} hover>
-                  <TableCell>{ward.name}</TableCell>
-                  <TableCell>
-                    <div
-                      dangerouslySetInnerHTML={{ __html: ward.description }}
-                      style={{ whiteSpace: 'normal' }}
-                    />
-                  </TableCell>
-
-                  <TableCell align="center">
-                    {hasPermission("update_speciality") && (
-                      <Tooltip title="Edit">
-                        <IconButton color="primary" onClick={() => onEdit(ward)}>
-                          <Edit />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                    {hasPermission("delete_speciality") && (
-                      <Tooltip title="Delete">
-                        <IconButton color="error" onClick={() => onDelete(ward.id)}>
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} align="center">
-                  <Typography color="text.secondary">No   specialties available</Typography>
+    <Paper sx={{ borderRadius: 3, overflow: "hidden", border: "1px solid #ddd" }}>
+      <Table>
+        <TableHead>
+          <TableRow sx={{ backgroundColor: "#f9fafb" }}>
+            <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Parent</TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {specialties.length > 0 ? (
+            specialties.map((s) => (
+              <TableRow key={s.id} hover>
+                <TableCell>{s.name}</TableCell>
+                <TableCell>
+                  {s.parent ? (
+                    <Chip label={s.parent.name} size="small" color="info" />
+                  ) : (
+                    <Chip label="Root" size="small" color="default" />
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Tooltip title="Edit">
+                    <IconButton size="small" onClick={() => onEdit(s)}>
+                      <Edit fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => onDelete(s.id)}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+            ))
+          ) : (
+            <TableRow>
+              <Fallbacks
+                          severity="evaluation"
+                          title="No Referral Found"
+                          description="Referrals will appear here once available."
+                        />
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </Paper>
   );
-};
-
-export default SpecialtiesTable;
+}

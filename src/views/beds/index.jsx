@@ -14,6 +14,7 @@ import {
   Select,
   InputLabel,
   FormControl,
+  Pagination,
 } from "@mui/material";
 import { toast, ToastContainer } from "react-toastify";
 import BedTable from "./components/BedsTable";
@@ -35,12 +36,17 @@ export default function BedsIndex() {
     bed_number: "",
   });
 
-  // -------------------------
-  // Fetch Beds
-  // -------------------------
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
+  /* --------------------------------------------------------------------- */
+  // Fetch Beds (with pagination)
+  /* --------------------------------------------------------------------- */
   const handleFetchingBeds = async () => {
     const token = await GetToken();
-    const Api = `${Backend.auth}${Backend.beds}`;
+    const Api = `${Backend.auth}${Backend.beds}?page=${page}&per_page=${perPage}`;
     const headers = {
       Authorization: `Bearer ${token}`,
       accept: "application/json",
@@ -53,7 +59,16 @@ export default function BedsIndex() {
       const responseData = await response.json();
 
       if (responseData.success) {
-        setBeds(responseData.data?.data || responseData.data || []);
+        const bedData =
+          responseData.data?.data?.data ||
+          responseData.data?.data ||
+          responseData.data ||
+          [];
+        setBeds(bedData);
+
+        // Use pagination info if available
+        const pagination = responseData.data?.data || responseData.data || {};
+        setTotalPages(pagination.last_page || 1);
       } else {
         toast.warning(responseData.message || "Failed to fetch beds");
       }
@@ -64,9 +79,9 @@ export default function BedsIndex() {
     }
   };
 
-  // -------------------------
+  /* --------------------------------------------------------------------- */
   // Fetch Wards for dropdown
-  // -------------------------
+  /* --------------------------------------------------------------------- */
   const handleFetchingWards = async () => {
     const token = await GetToken();
     const Api = `${Backend.auth}${Backend.wards}`;
@@ -92,23 +107,26 @@ export default function BedsIndex() {
 
   useEffect(() => {
     handleFetchingBeds();
+  }, [page, perPage]); // refetch when pagination changes
+
+  useEffect(() => {
     handleFetchingWards();
   }, []);
 
-  // -------------------------
+  /* --------------------------------------------------------------------- */
   // Open Add/Edit Dialog
-  // -------------------------
+  /* --------------------------------------------------------------------- */
   const handleOpenDialog = (bed = null) => {
     if (bed) {
       setEditMode(true);
       setSelectedBed(bed);
       setFormData({
-        ward_id: bed.ward?.id || "", // Use nested ward id
+        ward_id: bed.ward?.id || "",
         bed_number: bed.bed_number || "",
       });
     } else {
       setEditMode(false);
-      setFormData({ ward_id: wards[0]?.id || "", bed_number: "" }); // Default to first ward if exists
+      setFormData({ ward_id: wards[0]?.id || "", bed_number: "" });
       setSelectedBed(null);
     }
     setOpenDialog(true);
@@ -121,9 +139,9 @@ export default function BedsIndex() {
     setEditMode(false);
   };
 
-  // -------------------------
-  // Handle Form Submit
-  // -------------------------
+  /* --------------------------------------------------------------------- */
+  // Submit (Add / Update)
+  /* --------------------------------------------------------------------- */
   const handleSubmit = async () => {
     if (!formData.ward_id || !formData.bed_number) {
       toast.warning("Please select a ward and enter bed number");
@@ -152,13 +170,10 @@ export default function BedsIndex() {
         headers,
         body: JSON.stringify(payload),
       });
-
       const responseData = await response.json();
 
       if (responseData.success) {
-        toast.success(
-          editMode ? "Bed updated successfully!" : "Bed added successfully!"
-        );
+        toast.success(editMode ? "Bed updated successfully!" : "Bed added successfully!");
         handleFetchingBeds();
         handleCloseDialog();
       } else {
@@ -171,9 +186,9 @@ export default function BedsIndex() {
     }
   };
 
-  // -------------------------
+  /* --------------------------------------------------------------------- */
   // Delete Bed
-  // -------------------------
+  /* --------------------------------------------------------------------- */
   const handleDelete = async (id) => {
     const token = await GetToken();
     const Api = `${Backend.auth}${Backend.beds}/${id}`;
@@ -198,9 +213,9 @@ export default function BedsIndex() {
     }
   };
 
-  // -------------------------
+  /* --------------------------------------------------------------------- */
   // Loading Spinner
-  // -------------------------
+  /* --------------------------------------------------------------------- */
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
@@ -209,9 +224,9 @@ export default function BedsIndex() {
     );
   }
 
-  // -------------------------
+  /* --------------------------------------------------------------------- */
   // Render Page
-  // -------------------------
+  /* --------------------------------------------------------------------- */
   return (
     <PageContainer
       title="Beds Management"
@@ -225,7 +240,7 @@ export default function BedsIndex() {
               startIcon={<Add />}
               sx={{ borderRadius: 2, textTransform: "none" }}
               onClick={() => handleOpenDialog()}
-              disabled={wards.length === 0} // Wait for wards to load
+              disabled={wards.length === 0}
             >
               Add Bed
             </Button>
@@ -233,11 +248,44 @@ export default function BedsIndex() {
         )
       }
     >
-      <BedTable
-        beds={beds}
-        onEdit={(bed) => handleOpenDialog(bed)}
-        onDelete={(id) => handleDelete(id)}
-      />
+      <BedTable beds={beds} onEdit={handleOpenDialog} onDelete={handleDelete} />
+
+      {/* Pagination Controls */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mt: 3,
+          px:4,
+        }}
+      >
+       
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography variant="body2">Rows per page:</Typography>
+          <Select
+            size="small"
+            value={perPage}
+            onChange={(e) => {
+              setPerPage(e.target.value);
+              setPage(1);
+            }}
+          >
+            {[5, 10, 20, 50].map((n) => (
+              <MenuItem key={n} value={n}>
+                {n}
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
+         <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => setPage(value)}
+          color="primary"
+        />
+      </Box>
 
       {/* Add/Edit Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
@@ -250,9 +298,7 @@ export default function BedsIndex() {
                 <Select
                   label="Ward"
                   value={formData.ward_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ward_id: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, ward_id: e.target.value })}
                 >
                   {wards.length > 0 ? (
                     wards.map((ward) => (
@@ -290,7 +336,8 @@ export default function BedsIndex() {
           </Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer/>
+
+      <ToastContainer />
     </PageContainer>
   );
 }

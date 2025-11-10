@@ -187,7 +187,7 @@ const PatientRegisterView = () => {
     <PageContainer title="Register Patient">
       <ToastContainer />
       <RegisterPatient
-        onSubmitAll={handleSubmitAllPatientData} // ✅ single unified submit
+        onSubmitAll={handleSubmitAllPatientData}
         rooms={rooms}
         organizations={organizations}
         doctors={doctors}

@@ -1,3 +1,4 @@
+// src/views/doctors/AllDoctors.jsx
 import React, { useEffect, useState } from "react";
 import { Box, CircularProgress, Button } from "@mui/material";
 import { Add } from "@mui/icons-material";
@@ -10,12 +11,13 @@ import hasPermission from "utils/auth/hasPermission";
 import DoctorsTable from "./components/DoctorsTable";
 import DoctorForm from "./components/DoctorForm";
 import MyPatientsTable from "../components/MyPatientsTable";
-import Fallbacks from 'utils/components/Fallbacks';
+import Fallbacks from "utils/components/Fallbacks";
 
 export default function AllDoctors() {
   const [doctors, setDoctors] = useState([]);
   const [specialties, setSpecialties] = useState([]);
   const [loading, setLoading] = useState(false);
+
   const [pagination, setPagination] = useState({
     current_page: 1,
     last_page: 1,
@@ -28,7 +30,7 @@ export default function AllDoctors() {
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [openPatients, setOpenPatients] = useState(false);
 
-  // Triggered from "View My Patients" button
+  // ---------------- View Patients ----------------
   const handleViewPatients = (doctor) => {
     setSelectedDoctorId(doctor.id);
     setOpenPatients(true);
@@ -38,7 +40,8 @@ export default function AllDoctors() {
     setOpenPatients(false);
     setSelectedDoctorId(null);
   };
-  // ---------------- Fetch Doctors ----------------
+
+  // ---------------- Fetch Doctors with Pagination ----------------
   const fetchDoctors = async (page = 1) => {
     const token = await GetToken();
     const Api = `${Backend.auth}${Backend.paginatedDoctors}?page=${page}`;
@@ -51,16 +54,16 @@ export default function AllDoctors() {
       if (data.success) {
         setDoctors(data.data?.data || []);
         setPagination({
-          current_page: data.data?.current_page,
-          last_page: data.data?.last_page,
-          per_page: data.data?.per_page,
-          total: data.data?.total,
+          current_page: data.data?.current_page || 1,
+          last_page: data.data?.last_page || 1,
+          per_page: data.data?.per_page || 10,
+          total: data.data?.total || 0,
         });
       } else {
         toast.warning(data.message || "Failed to fetch doctors");
       }
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || "Network error");
     } finally {
       setLoading(false);
     }
@@ -88,6 +91,7 @@ export default function AllDoctors() {
     fetchSpecialties();
   }, []);
 
+  // ---------------- CRUD Handlers ----------------
   const handleAddDoctor = () => {
     setEditDoctor(null);
     setOpenForm(true);
@@ -109,6 +113,8 @@ export default function AllDoctors() {
   };
 
   const handleDeleteDoctor = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this doctor?")) return;
+
     const token = await GetToken();
     const Api = `${Backend.auth}${Backend.doctors}/${id}`;
     try {
@@ -128,7 +134,8 @@ export default function AllDoctors() {
     }
   };
 
-  if (loading) {
+  // ---------------- Loading ----------------
+  if (loading && doctors.length === 0) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
         <CircularProgress />
@@ -136,21 +143,23 @@ export default function AllDoctors() {
     );
   }
 
-  if (!doctors.length){
-      return (
-        <PageContainer title="My Referrals" maxWidth="lg">
-  
+  // ---------------- Empty State ----------------
+  if (!doctors.length) {
+    return (
+      <PageContainer title="Doctors Management" maxWidth="lg">
+        <Box sx={{ py: 6, textAlign: "center" }}>
           <Fallbacks
             severity="evaluation"
             title="No Doctors Found"
-            description="Doctors will appear here once available."
-            sx={{ paddingTop: 6 }}
+            description="Add a doctor to get started."
           />
-        </PageContainer>
-      );
-    }
+        </Box>
+        <ToastContainer />
+      </PageContainer>
+    );
+  }
 
-
+  // ---------------- Main Render ----------------
   return (
     <PageContainer
       title="Doctors Management"
@@ -171,13 +180,13 @@ export default function AllDoctors() {
       <DoctorsTable
         doctors={doctors}
         pagination={pagination}
-        onPageChange={(p) => fetchDoctors(p)}
+        onPageChange={fetchDoctors}
         onEdit={handleEditDoctor}
         onDelete={handleDeleteDoctor}
-        onViewPatients={handleViewPatients} // ✅ Pass the new function
+        onViewPatients={handleViewPatients}
       />
 
-
+      {/* Add/Edit Form */}
       <DoctorForm
         open={openForm}
         onClose={handleCloseForm}
@@ -185,16 +194,18 @@ export default function AllDoctors() {
         editDoctor={editDoctor}
         specialties={specialties}
       />
+
+      {/* View Patients Modal */}
       {selectedDoctorId && (
         <MyPatientsTable
           doctorId={selectedDoctorId}
           open={openPatients}
           onClose={handleClosePatients}
-          onView={(patient) => console.log("Viewing patient:", patient)}
+          onView={(patient) => console.log("View patient:", patient)}
         />
-
       )}
-<ToastContainer/>
+
+      <ToastContainer />
     </PageContainer>
   );
 }

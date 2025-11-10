@@ -61,8 +61,8 @@ export const Nurses = () => {
       icon: icons.IconCalendarUser,
     },
     read_lens_type: {
-      id: 'Nurse-logs',
-      title: 'Nurse logs',
+      id: 'progress-logs',
+      title: 'Progress logs',
       url: '/nurse_logs',
       icon: icons.IconUsersGroup,
     },

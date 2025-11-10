@@ -55,9 +55,9 @@ export const Surgical = () => {
 
   const permissionMap = {
     read_laboratory_payment_requests: {
-      id: 'Surgery-booking ',
-      title: 'Surgery booking ',
-      url: '/surgery_request ',
+      id: 'Surgery-booking',
+      title: 'Surgery booking',
+      url: '/surgery-booking',
       icon: icons.IconCalendarClock,
     },
     read_room: {

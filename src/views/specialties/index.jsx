@@ -1,3 +1,4 @@
+// src/views/specialties/SpecialtiesIndex.jsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -10,6 +11,11 @@ import {
   Button,
   Grid,
   Typography,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  Pagination,
 } from "@mui/material";
 import { toast, ToastContainer } from "react-toastify";
 import SpecialtiesTable from "./components/SpecialtiesTable";
@@ -23,44 +29,95 @@ import "react-quill/dist/quill.snow.css";
 
 export default function SpecialtiesIndex() {
   const [specialties, setSpecialties] = useState([]);
+  const [allSpecialties, setAllSpecialties] = useState([]); 
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({ name: "", description: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    parent_id: "",
+  });
   const [selectedSpecialty, setSelectedSpecialty] = useState(null);
 
+  // Pagination state
+  const [perPage, setPerPage] = useState(10);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    perPage: 10,
+    total: 0,
+    lastPage: 1,
+  });
+
   // -------------------------
-  // Fetch Specialties
+  // Fetch Specialties with Pagination
   // -------------------------
-  const handleFetchingSpecialties = async () => {
+  const fetchSpecialties = async () => {
+  const token = await GetToken();
+  const Api = `${Backend.auth}${Backend.specialties}`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Accept : "application/json"
+  };
+
+  try {
+    setLoading(true);
+    const response = await fetch(Api, { method: "GET", headers });
+    const data = await response.json();
+
+    if (data.success) {
+      const list = data.data || [];
+
+      setAllSpecialties(list); 
+    } else {
+      toast.warning(data.message || "Failed to fetch specialties");
+    }
+  } catch (error) {
+    toast.error(error.message || "Error fetching specialties");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const fetchPaginateSpecialties = async (page = 1, perPage = 10) => {
     const token = await GetToken();
-    const Api = `${Backend.auth}${Backend.specialties}`;
+    const Api = `${Backend.auth}${Backend.paginatedSpecialty}?page=${page}&per_page=${perPage}`;
     const headers = {
       Authorization: `Bearer ${token}`,
-      accept: "application/json",
       "Content-Type": "application/json",
+      Accept : "application/json"
     };
+
 
     try {
       setLoading(true);
       const response = await fetch(Api, { method: "GET", headers });
-      const responseData = await response.json();
+      const data = await response.json();
 
-      if (responseData.success) {
-        setSpecialties(responseData.data?.data || responseData.data || []);
+      if (data.success) {
+        const list = data.data?.data || [];
+        setSpecialties(list);
+        
+        setPagination({
+          page: data.data?.current_page || 1,
+          perPage: data.data?.per_page || perPage,
+          total: data.data?.total || 0,
+          lastPage: data.data?.last_page || 1,
+        });
       } else {
-        toast.warning(responseData.message || "Failed to fetch specialties");
+        toast.warning(data.message || "Failed to fetch specialties");
       }
     } catch (error) {
-      toast.error(error.message || "An error occurred while fetching specialties");
+      toast.error(error.message || "Error fetching specialties");
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    handleFetchingSpecialties();
-  }, []);
+    fetchSpecialties();
+    fetchPaginateSpecialties(1, perPage)
+  }, [perPage]);
 
   // -------------------------
   // Open Add/Edit Dialog
@@ -72,10 +129,11 @@ export default function SpecialtiesIndex() {
       setFormData({
         name: specialty.name || "",
         description: specialty.description || "",
+        parent_id: specialty.parent_id || "",
       });
     } else {
       setEditMode(false);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", parent_id: "" });
       setSelectedSpecialty(null);
     }
     setOpenDialog(true);
@@ -83,7 +141,7 @@ export default function SpecialtiesIndex() {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setFormData({ name: "", description: "" });
+    setFormData({ name: "", description: "", parent_id: "" });
     setSelectedSpecialty(null);
     setEditMode(false);
   };
@@ -93,7 +151,7 @@ export default function SpecialtiesIndex() {
   // -------------------------
   const handleSubmit = async () => {
     if (!formData.name || !formData.description) {
-      toast.warning("Please enter name and description");
+      toast.warning("Name and description are required");
       return;
     }
 
@@ -103,13 +161,14 @@ export default function SpecialtiesIndex() {
       : `${Backend.auth}${Backend.specialties}`;
     const headers = {
       Authorization: `Bearer ${token}`,
-      accept: "application/json",
       "Content-Type": "application/json",
+      Accept : "application/json"
     };
 
     const payload = {
       name: formData.name,
       description: formData.description,
+      parent_id: formData.parent_id || null,
     };
 
     try {
@@ -120,21 +179,17 @@ export default function SpecialtiesIndex() {
         body: JSON.stringify(payload),
       });
 
-      const responseData = await response.json();
+      const data = await response.json();
 
-      if (responseData.success) {
-        toast.success(
-          editMode
-            ? "Specialty updated successfully!"
-            : "Specialty added successfully!"
-        );
-        handleFetchingSpecialties();
+      if (data.success) {
+        toast.success(editMode ? "Updated!" : "Added!");
+        fetchSpecialties(pagination.page, perPage);
         handleCloseDialog();
       } else {
-        toast.warning(responseData.message || "Operation failed");
+        toast.warning(data.message || "Operation failed");
       }
     } catch (error) {
-      toast.error(error.message || "An error occurred while saving");
+      toast.error(error.message || "Save failed");
     } finally {
       setLoading(false);
     }
@@ -144,33 +199,30 @@ export default function SpecialtiesIndex() {
   // Delete Specialty
   // -------------------------
   const handleDelete = async (id) => {
+    if (!window.confirm("Delete this specialty?")) return;
+
     const token = await GetToken();
     const Api = `${Backend.auth}${Backend.specialties}/${id}`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      accept: "application/json",
-      "Content-Type": "application/json",
-    };
 
     try {
       const response = await fetch(Api, { method: "DELETE", headers });
-      const responseData = await response.json();
+      const data = await response.json();
 
-      if (responseData.success) {
-        toast.success("Specialty deleted successfully!");
-        handleFetchingSpecialties();
+      if (data.success) {
+        toast.success("Deleted!");
+        fetchSpecialties(pagination.page, perPage);
       } else {
-        toast.warning(responseData.message || "Failed to delete specialty");
+        toast.warning(data.message || "Delete failed");
       }
     } catch (error) {
-      toast.error(error.message || "An error occurred while deleting");
+      toast.error(error.message);
     }
   };
 
   // -------------------------
-  // Loading Spinner
+  // Loading
   // -------------------------
-  if (loading) {
+  if (loading && specialties.length === 0) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
         <CircularProgress />
@@ -178,6 +230,7 @@ export default function SpecialtiesIndex() {
     );
   }
 
+  
   // -------------------------
   // Render Page
   // -------------------------
@@ -185,27 +238,64 @@ export default function SpecialtiesIndex() {
     <PageContainer
       title="Specialties Management"
       maxWidth="lg"
-      sx={{ mt: 4, mb: 4 }}
       rightOption={
         hasPermission("create_speciality") && (
-          <Box display="flex" alignItems="center" gap={2}>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              sx={{ borderRadius: 2, textTransform: "none" }}
-              onClick={() => handleOpenDialog()}
-            >
-              Add Specialty
-            </Button>
-          </Box>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            sx={{ borderRadius: 2, textTransform: "none" }}
+            onClick={() => handleOpenDialog()}
+          >
+            Add Specialty
+          </Button>
         )
       }
     >
       <SpecialtiesTable
         specialties={specialties}
-        onEdit={(specialty) => handleOpenDialog(specialty)}
-        onDelete={(id) => handleDelete(id)}
+        onEdit={handleOpenDialog}
+        onDelete={handleDelete}
       />
+
+      {/* ---------- Custom Pagination ---------- */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mt: 3,
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
+        {/* Rows per page */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography variant="body2">Rows per page:</Typography>
+          <FormControl size="small" sx={{ minWidth: 70 }}>
+            <Select
+              value={perPage}
+              onChange={(e) => setPerPage(e.target.value)}
+            >
+              {[5, 10, 20, 50].map((num) => (
+                <MenuItem key={num} value={num}>
+                  {num}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+
+        {/* Page numbers */}
+        <Pagination
+          count={pagination.lastPage}
+          page={pagination.page}
+          onChange={(e, value) => fetchSpecialties(value, perPage)}
+          color="primary"
+          shape="rounded"
+          showFirstButton
+          showLastButton
+        />
+      </Box>
 
       {/* Add/Edit Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
@@ -217,10 +307,30 @@ export default function SpecialtiesIndex() {
                 label="Specialty Name"
                 fullWidth
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel>Parent Specialty</InputLabel>
+                <Select
+                  value={formData.parent_id}
+                  label="Parent Specialty"
+                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {allSpecialties
+                    .filter((s) => (editMode ? s.id !== selectedSpecialty.id : true))
+                    .map((s) => (
+                      <MenuItem key={s.id} value={s.id}>
+                        {s.name}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
             </Grid>
 
             <Grid item xs={12}>
@@ -230,9 +340,7 @@ export default function SpecialtiesIndex() {
               <ReactQuill
                 theme="snow"
                 value={formData.description}
-                onChange={(value) =>
-                  setFormData({ ...formData, description: value })
-                }
+                onChange={(value) => setFormData({ ...formData, description: value })}
                 style={{ height: "200px", marginBottom: "50px" }}
               />
             </Grid>
@@ -249,7 +357,8 @@ export default function SpecialtiesIndex() {
           </Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer/>
+
+      <ToastContainer />
     </PageContainer>
   );
 }

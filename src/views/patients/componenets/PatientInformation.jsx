@@ -1,90 +1,69 @@
 import React from 'react';
-import {
-  Avatar,
-  CardContent,
-  Chip,
-  Grid,
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-} from '@mui/material';
+import { Grid, Box, Typography, Avatar, useTheme, Stack } from '@mui/material';
 import {
   Person,
+  Fingerprint,
   Email,
   Phone,
-  Cake,
   Transgender,
-  Fingerprint,
+  Cake,
   CreditCard,
   Home,
+  Category,
   Warning,
   History,
   MedicalServices,
 } from '@mui/icons-material';
-import { Box, useTheme } from '@mui/system';
 
 const PatientInformationTab = ({ patient }) => {
-  console.log("Patient Data:", patient);
   const theme = useTheme();
-  const renderDetail = (icon, label, value) => (
-    <Grid item xs={12} sm={6} md={4}>
-      <Box display="flex" alignItems="center" gap={2} mb={2}>
-        {React.cloneElement(icon, { color: 'primary' })}
+  const renderDetail = (Icon, label, value) => (
+    <Grid item xs={12} sm={6} md={4} lg={3}>
+      <Stack direction="row" alignItems="center" spacing={1.5} mb={2}>
+        <Box
+          sx={{
+            p: 1,
+            bgcolor: 'primary.light',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 36,
+            height: 36,
+          }}
+        >
+          <Icon
+            fontSize="small"
+            color="primary"
+            sx={{
+              color: 'primary.main',
+            }}
+          />
+        </Box>
         <Box>
-          <Typography variant="subtitle2" color="textSecondary">
+          <Typography variant="caption" color="text.secondary">
             {label}
           </Typography>
-          <Typography variant="body1">
+          <Typography variant="body1" fontWeight={500}>
             {value || (
-              <span style={{ color: '#999', fontStyle: 'italic' }}>
+              <span
+                style={{
+                  color: theme.palette.text.disabled,
+                  fontStyle: 'italic',
+                  fontWeight: 400,
+                }}
+              >
                 Not specified
               </span>
             )}
           </Typography>
         </Box>
-      </Box>
+      </Stack>
     </Grid>
   );
-
-  const renderList = (icon, label, items) => {
-    // Ensure items is always an array
-    const itemsArray = Array.isArray(items) ? items : (items ? [items] : []);
-    
-    return (
-      <Grid item xs={12} sm={6} md={4}>
-        <Box display="flex" alignItems="flex-start" gap={2} mb={2}>
-          {React.cloneElement(icon, { color: 'primary' })}
-          <Box>
-            <Typography variant="subtitle2" color="textSecondary">
-              {label}
-            </Typography>
-            {itemsArray.length > 0 ? (
-              <List dense sx={{ py: 0 }}>
-                {itemsArray.map((item, index) => (
-                  <ListItem key={index} sx={{ py: 0, pl: 0 }}>
-                    <ListItemText primary={item} />
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              <Typography
-                variant="body1"
-                style={{ color: '#999', fontStyle: 'italic' }}
-              >
-                Not specified
-              </Typography>
-            )}
-          </Box>
-        </Box>
-      </Grid>
-    );
-  };
-
   return (
-    <Grid container spacing={3} mt={2}>
-      {/* Patient Photo */}
-      <Grid item xs={12} md={3} display="flex" justifyContent="center">
+    <Grid container spacing={2} mt={{ xs: 2, md: 0 }}>
+      <Grid item xs={12} md={2}>
         <Box
           sx={{
             display: 'flex',
@@ -94,8 +73,8 @@ const PatientInformationTab = ({ patient }) => {
           }}
         >
           <Avatar
-            src={patient.patient_picture_url}
-            alt={patient.full_name}
+            src={patient?.patient_picture_url}
+            alt={patient?.patient_name}
             sx={{
               width: 90,
               height: 90,
@@ -110,86 +89,46 @@ const PatientInformationTab = ({ patient }) => {
               },
             }}
           >
-            {!patient.patient_picture_url && patient.full_name?.charAt(0)}
+            {!patient?.patient_picture_url && patient?.patient_name?.charAt(0)}
           </Avatar>
           <Box sx={{ mt: 1, textAlign: 'center' }}>
-            {/* Name + Status */}
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: 1,
-              }}
-            >
-              <Typography variant="subtitle2" fontWeight={600}>
-                {patient?.full_name}
-              </Typography>
-
-              <Chip
-                label={patient?.patient_category}
-                size="small"
-                sx={{
-                  bgcolor: 'success.light',
-                  color: 'success.dark',
-                  fontWeight: 500,
-                  borderRadius: '5px',
-                }}
-              />
-            </Box>
-
-            {/* EMR Number */}
-            <Typography variant="h5" color="text.secondary">
+            <Typography variant="subtitle2" fontWeight={600}>
+              {patient?.patient_name}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
               EMR: {patient?.emr_number}
             </Typography>
           </Box>
         </Box>
       </Grid>
-      <Grid item xs={12} md={9}>
-        <CardContent sx={{ p: 0 }}>
-          <Grid container spacing={2}>
-            {renderDetail(<Person />, 'Full Name', patient.full_name)}
-            {renderDetail(<Fingerprint />, 'EMR Number', patient.emr_number)}
-            {renderDetail(<Email />, 'Email', patient.email)}
-            {renderDetail(<Phone />, 'Phone', patient.phone)}
-            {renderDetail(<Transgender />, 'Gender', patient.gender)}
-            {renderDetail(
-              <Cake />,
-              'Date of Birth',
-              patient.date_of_birth &&
-                new Date(patient.date_of_birth).toLocaleDateString(),
-            )}
-            {renderDetail(<Fingerprint />, 'National ID', patient.national_id)}
-            {renderDetail(
-              <Fingerprint />,
-              'Passport Number',
-              patient.passport_number,
-            )}
-            {/* {renderDetail(
-              <Category />,
-              'Patient Category',
-              patient.patient_category,
-            )} */}
-            {renderDetail(<CreditCard />, 'Payment Type', patient.payment_type)}
-            {renderDetail(
-              <Home />,
-              'Address',
-              patient.address &&
-                `${patient.address?.wereda}, ${patient.address?.city}, ${patient.address?.country}`,
-            )}
-            {renderList(<Warning />, 'Allergies', patient.allergies)}
-            {renderList(
-              <History />,
-              'Medical History',
-              patient.medical_history,
-            )}
-            {renderList(
-              <MedicalServices />,
-              'Medical Conditions',
-              patient.medical_conditions,
-            )}
-          </Grid>
-        </CardContent>
+      <Grid item xs={12} md={10}>
+        <Grid container spacing={2}>
+          {renderDetail(Person, 'Full Name', patient?.patient_name)}
+          {renderDetail(Fingerprint, 'EMR Number', patient?.emr_number)}
+          {renderDetail(Email, 'Email', patient?.email)}
+          {renderDetail(Phone, 'Phone', patient?.phone)}
+          {renderDetail(Transgender, 'Gender', patient?.gender)}
+          {renderDetail(
+            Cake,
+            'Date of Birth',
+            patient?.date_of_birth &&
+              new Date(patient?.date_of_birth).toLocaleDateString(),
+          )}
+          {renderDetail(CreditCard, 'Payment', patient?.payment_type)}
+          {renderDetail(
+            Home,
+            'Address',
+            patient?.address &&
+              `${patient?.address?.wereda}, ${patient?.address?.city}`,
+          )}
+          {renderDetail(Warning, 'Allergies', patient?.allergy)}
+          {renderDetail(History, 'Medical History', patient?.medical_history)}
+          {renderDetail(
+            MedicalServices,
+            'Medical Conditions',
+            patient?.medical_conditions,
+          )}
+        </Grid>
       </Grid>
     </Grid>
   );

@@ -58,16 +58,4 @@ export const tabData = [
     label: 'Payment List',
     component: 'PaymentList',
   },
-  hasPermission('read_complaint') && {
-    label: 'Complaint',
-    component: 'ComplaintTab',
-  },
-  hasPermission('read_ocular_history') && {
-    label: 'Ocular History',
-    component: 'OcularHistoryTab',
-  },
-  hasPermission('read_medical_history') && {
-    label: 'Medical History',
-    component: 'MedicalHistoryTab',
-  },
 ].filter(Boolean);

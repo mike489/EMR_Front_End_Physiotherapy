@@ -13,9 +13,6 @@ import {
   MenuItem,
   Box,
   Typography,
-  Stepper,
-  Step,
-  StepLabel,
   Chip,
   FormGroup,
   FormControlLabel,
@@ -24,127 +21,132 @@ import {
   RadioGroup,
   Radio,
   FormLabel,
-  Divider,
   IconButton,
   Tooltip,
+  Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Collapse,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
+import AddIcon from '@mui/icons-material/Add';
 
 const AddShoulder = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
-  const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState({
-    // Primary Complaint & History
-    primary_complaint: '',
-    onset: '',
-    duration: '',
-    mechanism_of_injury: '',
+    complaints: '',
+    pmh: '',
+    hpi: '',
+    red_flags: [],
+    red_flags_remark: '',
     aggravating_factors: '',
     easing_factors: '',
-    previous_episodes: '',
-    dominant_hand: 'right',
-
-    // Pain Assessment
     pain_location: [],
-    pain_level: 0,
+    pain_level: '',
     pain_type: '',
     pain_radiation: false,
-    radiation_pattern: '',
-    night_pain: false,
+    radiation_location: '',
+    functional_limitations_adl: [],
+    functional_limitations_adl_remark: '',
 
-    // Functional Limitations
-    functional_limitations: [],
-    adl_difficulties: [],
-    sleep_disturbance: '',
-    work_impact: '',
-    sports_impact: '',
+    // Shoulder-specific fields
+    palpations: [],
+    palpations_remark: '',
+    biomechanical: [],
+    biomechanical_remark: '',
+    observation: [],
+    observation_remark: '',
 
-    // Shoulder Range of Motion
-    rom_flexion_active: '',
-    rom_flexion_passive: '',
-    rom_extension_active: '',
-    rom_extension_passive: '',
-    rom_abduction_active: '',
-    rom_abduction_passive: '',
-    rom_adduction_active: '',
-    rom_adduction_passive: '',
-    rom_ir_active: '',
-    rom_ir_passive: '',
-    rom_er_active: '',
-    rom_er_passive: '',
-    rom_horizontal_abduction_active: '',
-    rom_horizontal_abduction_passive: '',
-    rom_horizontal_adduction_active: '',
-    rom_horizontal_adduction_passive: '',
-    rom_pain_pattern: '',
+    // ROM for shoulder
+    range_of_motion: {
+      flexion: { left: '', right: '' },
+      extension: { left: '', right: '' },
+      abduction: { left: '', right: '' },
+      adduction: { left: '', right: '' },
+      internal_rotation: { left: '', right: '' },
+      external_rotation: { left: '', right: '' },
+    },
+    rom_remark: '',
 
-    // Strength Assessment
-    strength_flexion: '',
-    strength_extension: '',
-    strength_abduction: '',
-    strength_adduction: '',
-    strength_ir: '',
-    strength_er: '',
-    strength_empty_can: '',
-    strength_lift_off: '',
-    strength_belly_press: '',
-    muscle_grading_system: 'MRC',
+    // Strength for shoulder
+    strength_flexion_right: '',
+    strength_flexion_left: '',
+    strength_extension_right: '',
+    strength_extension_left: '',
+    strength_abduction_right: '',
+    strength_abduction_left: '',
+    strength_adduction_right: '',
+    strength_adduction_left: '',
+    strength_internal_rotation_right: '',
+    strength_internal_rotation_left: '',
+    strength_external_rotation_right: '',
+    strength_external_rotation_left: '',
+    strength_retraction_right: '',
+    strength_retraction_left: '',
+    strength_depression_right: '',
+    strength_depression_left: '',
+    strength_remark: '',
 
-    // Special Tests
+    // Special tests for shoulder
     special_tests: [],
-    tests_results: {},
+    special_tests_remark: '',
 
-    // Palpation Findings
-    tenderness_locations: [],
-    muscle_spasms: [],
-    trigger_points: [],
-    joint_stiffness: [],
-    crepitus: false,
+    // Neurological Scan
+    neurological_scan: {
+      reflexes: {
+        c5_c6: { left: '', right: '' },
+        c7: { left: '', right: '' },
+        l3_l4: { left: '', right: '' },
+      },
+      sensory: {
+        c5: { left: '', right: '' },
+        c6: { left: '', right: '' },
+        c7: { left: '', right: '' },
+        c8: { left: '', right: '' },
+        t1: { left: '', right: '' },
+      },
+    },
+    neurological_scan_remark: '',
 
-    // Posture & Observation
-    posture_assessment: [],
-    shoulder_position: '',
-    muscle_atrophy: [],
-    swelling: '',
-    bruising: '',
+    // Balance and gait
+    balance_issues: [],
+    balance_issues_remark: '',
+    gait_pattern: '',
 
-    // Red Flags Screening
-    red_flags: [],
-    instability_episodes: false,
-    locking_catching: false,
-    neurological_symptoms: false,
+    // Clinical findings
+    swelling_present: false,
+    bruising_present: false,
+    deformity_present: false,
+    muscle_atrophy: false,
 
-    // Functional Tests
-    functional_tests: {},
+    // Clinical Impression
+    clinical_impression: [],
+    clinical_impression_remark: '',
 
-    // Additional Findings
-    muscle_imbalance: '',
-    joint_play: '',
-    scapular_dyskinesis: '',
-    previous_treatment: '',
-    previous_surgery: '',
-    imaging_findings: '',
+    // Treatment
+    treatment_plans: [],
+    treatment_plans_remark: '',
+    short_term_goal: '',
 
-    // Assessment & Plan
-    clinical_impression: '',
-    differential_diagnosis: [],
-    treatment_plan: [],
-    goals: [],
-    precautions: '',
     visit_id: visit?.visit_id || '',
   });
 
-  const steps = [
-    'Chief Complaint & History',
-    'Pain Assessment',
-    'Functional Status',
-    'Physical Examination',
-    'Special Tests & Palpation',
-    'Assessment & Plan',
-  ];
+  const [showRemarks, setShowRemarks] = useState({
+    redFlags: false,
+    painLocation: false,
+    functionalLimitations: false,
+    observations: false,
+    assessmentPlan: false,
+    treatmentPlan: false,
+  });
 
-  // Shoulder-Specific Options
+  // Shoulder-specific pain locations
   const painLocations = [
     'Anterior Shoulder',
     'Lateral Shoulder',
@@ -152,1007 +154,226 @@ const AddShoulder = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
     'Acromioclavicular Joint',
     'Sternoclavicular Joint',
     'Bicipital Groove',
-    'Subacromial Space',
     'Rotator Cuff',
     'Deltoid',
-    'Trapezius',
-    'Scapular Region',
-    'Referred from Cervical',
   ];
 
-  const radiationPatterns = [
-    'Down Arm (Radicular)',
-    'To Elbow',
-    'To Hand/Fingers',
-    'To Scapula',
-    'To Neck',
-    'To Chest',
-    'Dermatomal Pattern',
-  ];
-
+  // Shoulder-specific functional limitations
   const functionalLimitations = [
-    'Overhead Activities',
-    'Reaching Behind Back',
-    'Reaching Across Body',
+    'Reaching Overhead',
     'Lifting Objects',
     'Pushing/Pulling',
-    'Throwing',
-    'Sleeping on Affected Side',
-    'Dressing/Undressing',
+    'Dressing',
     'Personal Hygiene',
-    'Driving',
-    'Work Activities',
+    'Sleeping on Affected Side',
     'Sports Activities',
-    'Household Chores',
-  ];
-
-  const adlDifficulties = [
-    'Combing Hair',
-    'Brushing Teeth',
-    'Washing Back',
-    'Fastening Bra',
-    'Putting on Shirt',
-    'Reaching High Shelf',
-    'Carrying Groceries',
-    'Opening Jars',
-    'Computer Work',
-    'Sleeping Comfortably',
-  ];
-
-  const postureAssessment = [
-    'Rounded Shoulders',
-    'Forward Head Posture',
-    'Winged Scapula',
-    'Elevated Shoulder',
-    'Depressed Shoulder',
-    'Protracted Scapula',
-    'Retracted Scapula',
-    'Anterior Tilt',
-    'Posterior Tilt',
-    'Normal Alignment',
-  ];
-
-  const muscleAtrophyOptions = [
-    'Supraspinatus',
-    'Infraspinatus',
-    'Deltoid',
-    'Trapezius',
-    'Serratus Anterior',
-    'No Visible Atrophy',
-  ];
-
-  const specialTests = [
-    { name: 'Neer Impingement Test', description: 'Subacromial impingement' },
-    { name: 'Hawkins-Kennedy Test', description: 'Subacromial impingement' },
-    { name: 'Empty Can Test', description: 'Supraspinatus integrity' },
-    { name: 'Drop Arm Test', description: 'Rotator cuff tear' },
-    { name: 'Lift-off Test', description: 'Subscapularis integrity' },
-    { name: 'Belly Press Test', description: 'Subscapularis integrity' },
-    { name: 'Apprehension Test', description: 'Anterior instability' },
-    { name: 'Relocation Test', description: 'Anterior instability' },
-    { name: 'Sulcus Sign', description: 'Inferior instability' },
-    { name: "O'Brien Test", description: 'SLAP lesion' },
-    { name: "Speed's Test", description: 'Biceps tendon pathology' },
-    { name: "Yergason's Test", description: 'Biceps tendon stability' },
-    { name: 'Cross-body Adduction Test', description: 'AC joint pathology' },
-    { name: 'Scarf Test', description: 'AC joint pathology' },
-  ];
-
-  const tendernessLocations = [
-    'Bicipital Groove',
-    'AC Joint',
-    'Subacromial Space',
-    'Supraspinatus Tendon',
-    'Infraspinatus Tendon',
-    'Teres Minor',
-    'Subscapularis',
-    'Deltoid Insertion',
-    'Trapezius',
-    'Levator Scapulae',
-    'Sternoclavicular Joint',
-    'Scapular Borders',
-  ];
-
-  const functionalTestsOptions = [
-    'Apley Scratch Test',
-    'Hand Behind Back',
-    'Hand to Opposite Shoulder',
-    'Wall Push-up',
-    'Scapular Stability',
-    'Functional Reach Test',
+    'Work Tasks',
+    'Driving',
   ];
 
   const redFlags = [
-    'Severe Trauma',
-    'Sudden Weakness',
-    'Numbness/Tingling Arm',
-    'Neck Pain with Radiation',
+    'Severe Unremitting Pain',
+    'Night Pain',
     'Unexplained Weight Loss',
     'History of Cancer',
     'Fever/Chills',
-    'Night Sweats',
-    'Constant Severe Pain',
-    'Joint Swelling/Warmth',
-    'Systemic Symptoms',
+    'IV Drug Use',
+    'Immunosuppression',
+    'Trauma',
+    'Neurological Deficit',
+    'Bowel/Bladder Changes',
+    'Saddle Anesthesia',
+  ];
+
+  // Shoulder-specific special tests
+  const specialTests = [
+    {
+      name: 'Hawkins-Kennedy Test',
+      description: 'Impingement test',
+    },
+    {
+      name: 'Neer Test',
+      description: 'Impingement test',
+    },
+    {
+      name: 'Empty Can Test',
+      description: 'Supraspinatus strength',
+    },
+    {
+      name: 'Lift-off Test',
+      description: 'Subscapularis strength',
+    },
+    {
+      name: 'Apprehension Test',
+      description: 'Anterior instability',
+    },
+  ];
+
+  // Shoulder-specific assessment options
+  const AssessmentOptions = [
+    'Rotator Cuff Tendinopathy',
+    'Shoulder Impingement',
+    'Adhesive Capsulitis',
+    'Glenohumeral Instability',
+    'Labral Tear',
+    'AC Joint Sprain',
+    'Biceps Tendinopathy',
+    'Shoulder Osteoarthritis',
   ];
 
   const treatmentOptions = [
+    'Therapeutic Exercises',
+    'Range of Motion Exercises',
+    'Strengthening Program',
     'Manual Therapy',
     'Joint Mobilization',
     'Soft Tissue Mobilization',
-    'Rotator Cuff Strengthening',
-    'Scapular Stabilization',
-    'Range of Motion Exercises',
-    'Stretching Protocol',
-    'Postural Re-education',
-    'Modalities (US, TENS, Heat/Ice)',
-    'Dry Needling',
-    'Kinesio Taping',
     'Activity Modification',
-    'Workplace Ergonomics',
-    'Sports-specific Training',
-    'Home Exercise Program',
-    'Patient Education',
+    'Postural Training',
   ];
 
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  const strengthOptions = [
+    '0/5 - No contraction',
+    '1/5 - Muscle flicker, but no movement',
+    '2/5 - Movement with gravity eliminated',
+    '3/5 - Movement against gravity only',
+    '4/5 - Movement against some resistance',
+    '5/5 - Normal strength',
+  ];
 
-  const handleArrayToggle = (field, value) => {
+  const clinicalImpressionOptions = [
+    'Decreased active ROM',
+    'Decreased passive ROM',
+    'Muscle Weakness',
+    'Joint Stiffness',
+    'Swelling',
+    'Instability',
+    'Muscle Imbalance',
+    'Postural Dysfunction',
+  ];
+
+  const tendernessOptions = [
+    'Not Tender',
+    'Mildly Tender',
+    'Moderately Tender',
+    'Severely Tender',
+  ];
+
+  const neurologicalOptions = [
+    'N/T', // Not Tested
+    'Intact',
+    'Diminished',
+    'Absent',
+    'Hyperreflexia',
+  ];
+
+  // Shoulder-specific strength tests
+  const strengthTests = [
+    { key: 'flexion', label: 'Flexion' },
+    { key: 'extension', label: 'Extension' },
+    { key: 'abduction', label: 'Abduction' },
+    { key: 'adduction', label: 'Adduction' },
+    { key: 'internal_rotation', label: 'Internal Rotation' },
+    { key: 'external_rotation', label: 'External Rotation' },
+    { key: 'retraction', label: 'Retraction' },
+    { key: 'depression', label: 'Depression' },
+  ];
+
+  // Shoulder-specific palpation tests
+  const palpationTests = [
+    { key: 'acromioclavicular_joint', label: 'Acromioclavicular Joint' },
+    { key: 'sternoclavicular_joint', label: 'Sternoclavicular Joint' },
+    { key: 'bicipital_groove', label: 'Bicipital Groove' },
+    { key: 'supraspinatus', label: 'Supraspinatus' },
+    { key: 'infraspinatus', label: 'Infraspinatus' },
+    { key: 'subscapularis', label: 'Subscapularis' },
+    { key: 'teres_minor', label: 'Teres Minor' },
+    { key: 'deltoid', label: 'Deltoid' },
+  ];
+
+  // Shoulder-specific ROM tests
+  const romTests = [
+    { key: 'flexion', label: 'Flexion', normal: '180°' },
+    { key: 'extension', label: 'Extension', normal: '60°' },
+    { key: 'abduction', label: 'Abduction', normal: '180°' },
+    { key: 'adduction', label: 'Adduction', normal: '45°' },
+    { key: 'internal_rotation', label: 'Internal Rotation', normal: '70°' },
+    { key: 'external_rotation', label: 'External Rotation', normal: '90°' },
+  ];
+
+  const handleInputChange = (field, value) =>
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+  const handleArrayToggle = (field, value) =>
     setFormData((prev) => ({
       ...prev,
       [field]: prev[field].includes(value)
         ? prev[field].filter((item) => item !== value)
         : [...prev[field], value],
     }));
-  };
 
-  const handleSpecialTestResult = (testName, result) => {
+  const handleSpecialTestResult = (testName, result) =>
     setFormData((prev) => ({
       ...prev,
-      tests_results: {
-        ...prev.tests_results,
+      special_tests: {
+        ...prev.special_tests,
         [testName]: result,
+      },
+    }));
+
+  const handleStrengthChange = (testKey, side, value) => {
+    const fieldName = `strength_${testKey}_${side}`;
+    handleInputChange(fieldName, value);
+  };
+
+  const handleRomChange = (testKey, side, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      range_of_motion: {
+        ...prev.range_of_motion,
+        [testKey]: {
+          ...prev.range_of_motion[testKey],
+          [side]: value,
+        },
       },
     }));
   };
 
-  const handleFunctionalTestResult = (testName, result) => {
+  const handlePalpationChange = (testKey, value) => {
+    const fieldName = `palpations_${testKey}`;
+    handleInputChange(fieldName, value);
+  };
+
+  const handleNeurologicalChange = (category, testKey, side, value) => {
     setFormData((prev) => ({
       ...prev,
-      functional_tests: {
-        ...prev.functional_tests,
-        [testName]: result,
+      neurological_scan: {
+        ...prev.neurological_scan,
+        [category]: {
+          ...prev.neurological_scan[category],
+          [testKey]: {
+            ...prev.neurological_scan[category][testKey],
+            [side]: value,
+          },
+        },
       },
     }));
   };
 
-  const handleNext = () => {
-    setActiveStep((prev) => prev + 1);
+  const toggleRemark = (section) => {
+    setShowRemarks((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
   };
 
-  const handleBack = () => {
-    setActiveStep((prev) => prev - 1);
-  };
-
-  const handleSubmit = () => {
-    onSubmit(formData);
-  };
-
-  const renderStepContent = (step) => {
-    switch (step) {
-      case 0:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Primary Complaint"
-                value={formData.primary_complaint}
-                onChange={(e) =>
-                  handleInputChange('primary_complaint', e.target.value)
-                }
-                placeholder="Describe the main shoulder problem..."
-                multiline
-                rows={2}
-                required
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Onset</InputLabel>
-                <Select
-                  value={formData.onset}
-                  label="Onset"
-                  onChange={(e) => handleInputChange('onset', e.target.value)}
-                >
-                  <MenuItem value="acute">Acute (0-7 days)</MenuItem>
-                  <MenuItem value="subacute">Subacute (1-6 weeks)</MenuItem>
-                  <MenuItem value="chronic">Chronic ({'>'}6 weeks)</MenuItem>
-                  <MenuItem value="insidious">Insidious</MenuItem>
-                  <MenuItem value="traumatic">Traumatic</MenuItem>
-                  <MenuItem value="overuse">Overuse/Repetitive</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Duration"
-                value={formData.duration}
-                onChange={(e) => handleInputChange('duration', e.target.value)}
-                placeholder="e.g., 2 weeks, 3 months"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Dominant Hand</InputLabel>
-                <Select
-                  value={formData.dominant_hand}
-                  label="Dominant Hand"
-                  onChange={(e) =>
-                    handleInputChange('dominant_hand', e.target.value)
-                  }
-                >
-                  <MenuItem value="right">Right</MenuItem>
-                  <MenuItem value="left">Left</MenuItem>
-                  <MenuItem value="ambidextrous">Ambidextrous</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Mechanism of Injury"
-                value={formData.mechanism_of_injury}
-                onChange={(e) =>
-                  handleInputChange('mechanism_of_injury', e.target.value)
-                }
-                placeholder="Describe how the injury occurred (fall, lifting, throwing, etc.)..."
-                multiline
-                rows={2}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Previous Episodes"
-                value={formData.previous_episodes}
-                onChange={(e) =>
-                  handleInputChange('previous_episodes', e.target.value)
-                }
-                placeholder="e.g., First episode, recurrent dislocations"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.instability_episodes}
-                    onChange={(e) =>
-                      handleInputChange(
-                        'instability_episodes',
-                        e.target.checked,
-                      )
-                    }
-                  />
-                }
-                label="History of Instability"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Aggravating Factors"
-                value={formData.aggravating_factors}
-                onChange={(e) =>
-                  handleInputChange('aggravating_factors', e.target.value)
-                }
-                placeholder="What makes it worse?"
-                multiline
-                rows={2}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Easing Factors"
-                value={formData.easing_factors}
-                onChange={(e) =>
-                  handleInputChange('easing_factors', e.target.value)
-                }
-                placeholder="What makes it better?"
-                multiline
-                rows={2}
-              />
-            </Grid>
-          </Grid>
-        );
-
-      case 1:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Pain Location (Select all that apply)
-              </Typography>
-              <FormGroup row>
-                {painLocations.map((location) => (
-                  <FormControlLabel
-                    key={location}
-                    control={
-                      <Checkbox
-                        checked={formData.pain_location.includes(location)}
-                        onChange={() =>
-                          handleArrayToggle('pain_location', location)
-                        }
-                      />
-                    }
-                    label={location}
-                  />
-                ))}
-              </FormGroup>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography gutterBottom>
-                Pain Level: {formData.pain_level}/10
-              </Typography>
-              <Slider
-                value={formData.pain_level}
-                onChange={(_, value) => handleInputChange('pain_level', value)}
-                min={0}
-                max={10}
-                step={1}
-                marks
-                valueLabelDisplay="auto"
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <FormControl component="fieldset">
-                <FormLabel component="legend">Pain Type</FormLabel>
-                <RadioGroup
-                  value={formData.pain_type}
-                  onChange={(e) =>
-                    handleInputChange('pain_type', e.target.value)
-                  }
-                  row
-                >
-                  <FormControlLabel
-                    value="sharp"
-                    control={<Radio />}
-                    label="Sharp"
-                  />
-                  <FormControlLabel
-                    value="dull"
-                    control={<Radio />}
-                    label="Dull Ache"
-                  />
-                  <FormControlLabel
-                    value="burning"
-                    control={<Radio />}
-                    label="Burning"
-                  />
-                  <FormControlLabel
-                    value="aching"
-                    control={<Radio />}
-                    label="Aching"
-                  />
-                  <FormControlLabel
-                    value="throbbing"
-                    control={<Radio />}
-                    label="Throbbing"
-                  />
-                  <FormControlLabel
-                    value="stabbing"
-                    control={<Radio />}
-                    label="Stabbing"
-                  />
-                </RadioGroup>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.pain_radiation}
-                    onChange={(e) =>
-                      handleInputChange('pain_radiation', e.target.checked)
-                    }
-                  />
-                }
-                label="Pain Radiates to Other Areas"
-              />
-              {formData.pain_radiation && (
-                <FormControl fullWidth sx={{ mt: 1 }}>
-                  <InputLabel>Radiation Pattern</InputLabel>
-                  <Select
-                    value={formData.radiation_pattern}
-                    label="Radiation Pattern"
-                    onChange={(e) =>
-                      handleInputChange('radiation_pattern', e.target.value)
-                    }
-                  >
-                    {radiationPatterns.map((pattern) => (
-                      <MenuItem key={pattern} value={pattern}>
-                        {pattern}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.night_pain}
-                    onChange={(e) =>
-                      handleInputChange('night_pain', e.target.checked)
-                    }
-                  />
-                }
-                label="Night Pain"
-              />
-            </Grid>
-          </Grid>
-        );
-
-      case 2:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Functional Limitations
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {functionalLimitations.map((limitation) => (
-                  <Chip
-                    key={limitation}
-                    label={limitation}
-                    onClick={() =>
-                      handleArrayToggle('functional_limitations', limitation)
-                    }
-                    color={
-                      formData.functional_limitations.includes(limitation)
-                        ? 'primary'
-                        : 'default'
-                    }
-                    variant={
-                      formData.functional_limitations.includes(limitation)
-                        ? 'filled'
-                        : 'outlined'
-                    }
-                  />
-                ))}
-              </Box>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Activities of Daily Living (ADL) Difficulties
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {adlDifficulties.map((activity) => (
-                  <Chip
-                    key={activity}
-                    label={activity}
-                    onClick={() =>
-                      handleArrayToggle('adl_difficulties', activity)
-                    }
-                    color={
-                      formData.adl_difficulties.includes(activity)
-                        ? 'primary'
-                        : 'default'
-                    }
-                    variant={
-                      formData.adl_difficulties.includes(activity)
-                        ? 'filled'
-                        : 'outlined'
-                    }
-                  />
-                ))}
-              </Box>
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Sleep Disturbance"
-                value={formData.sleep_disturbance}
-                onChange={(e) =>
-                  handleInputChange('sleep_disturbance', e.target.value)
-                }
-                placeholder="Describe sleep issues related to shoulder..."
-                multiline
-                rows={2}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Impact on Work"
-                value={formData.work_impact}
-                onChange={(e) =>
-                  handleInputChange('work_impact', e.target.value)
-                }
-                placeholder="How does this affect work?"
-                multiline
-                rows={2}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Impact on Sports/Recreation"
-                value={formData.sports_impact}
-                onChange={(e) =>
-                  handleInputChange('sports_impact', e.target.value)
-                }
-                placeholder="How does this affect sports or hobbies?"
-                multiline
-                rows={2}
-              />
-            </Grid>
-          </Grid>
-        );
-
-      case 3:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Shoulder Range of Motion (Degrees)
-              </Typography>
-              <Grid container spacing={2}>
-                {[
-                  { label: 'Flexion Active', field: 'rom_flexion_active' },
-                  { label: 'Flexion Passive', field: 'rom_flexion_passive' },
-                  { label: 'Extension Active', field: 'rom_extension_active' },
-                  {
-                    label: 'Extension Passive',
-                    field: 'rom_extension_passive',
-                  },
-                  { label: 'Abduction Active', field: 'rom_abduction_active' },
-                  {
-                    label: 'Abduction Passive',
-                    field: 'rom_abduction_passive',
-                  },
-                  { label: 'Adduction Active', field: 'rom_adduction_active' },
-                  {
-                    label: 'Adduction Passive',
-                    field: 'rom_adduction_passive',
-                  },
-                  { label: 'Internal Rotation Active', field: 'rom_ir_active' },
-                  {
-                    label: 'Internal Rotation Passive',
-                    field: 'rom_ir_passive',
-                  },
-                  { label: 'External Rotation Active', field: 'rom_er_active' },
-                  {
-                    label: 'External Rotation Passive',
-                    field: 'rom_er_passive',
-                  },
-                  {
-                    label: 'Horizontal Abduction Active',
-                    field: 'rom_horizontal_abduction_active',
-                  },
-                  {
-                    label: 'Horizontal Abduction Passive',
-                    field: 'rom_horizontal_abduction_passive',
-                  },
-                  {
-                    label: 'Horizontal Adduction Active',
-                    field: 'rom_horizontal_adduction_active',
-                  },
-                  {
-                    label: 'Horizontal Adduction Passive',
-                    field: 'rom_horizontal_adduction_passive',
-                  },
-                ].map((rom) => (
-                  <Grid item xs={12} sm={6} md={4} key={rom.field}>
-                    <TextField
-                      fullWidth
-                      label={rom.label}
-                      type="number"
-                      value={formData[rom.field]}
-                      onChange={(e) =>
-                        handleInputChange(rom.field, e.target.value)
-                      }
-                      InputProps={{ endAdornment: '°' }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Strength Assessment (0-5 Scale)
-              </Typography>
-              <Grid container spacing={2}>
-                {[
-                  { label: 'Flexion', field: 'strength_flexion' },
-                  { label: 'Extension', field: 'strength_extension' },
-                  { label: 'Abduction', field: 'strength_abduction' },
-                  { label: 'Adduction', field: 'strength_adduction' },
-                  { label: 'Internal Rotation', field: 'strength_ir' },
-                  { label: 'External Rotation', field: 'strength_er' },
-                  {
-                    label: 'Empty Can (Supraspinatus)',
-                    field: 'strength_empty_can',
-                  },
-                  {
-                    label: 'Lift-off (Subscapularis)',
-                    field: 'strength_lift_off',
-                  },
-                  {
-                    label: 'Belly Press (Subscapularis)',
-                    field: 'strength_belly_press',
-                  },
-                ].map((strength) => (
-                  <Grid item xs={12} sm={6} md={4} key={strength.field}>
-                    <TextField
-                      fullWidth
-                      label={strength.label}
-                      type="number"
-                      value={formData[strength.field]}
-                      onChange={(e) =>
-                        handleInputChange(strength.field, e.target.value)
-                      }
-                      inputProps={{ min: 0, max: 5, step: 0.5 }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Posture & Observation
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Posture Assessment
-                  </Typography>
-                  <Box
-                    sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}
-                  >
-                    {postureAssessment.map((posture) => (
-                      <Chip
-                        key={posture}
-                        label={posture}
-                        onClick={() =>
-                          handleArrayToggle('posture_assessment', posture)
-                        }
-                        color={
-                          formData.posture_assessment.includes(posture)
-                            ? 'primary'
-                            : 'default'
-                        }
-                        variant={
-                          formData.posture_assessment.includes(posture)
-                            ? 'filled'
-                            : 'outlined'
-                        }
-                      />
-                    ))}
-                  </Box>
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Muscle Atrophy
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {muscleAtrophyOptions.map((muscle) => (
-                      <Chip
-                        key={muscle}
-                        label={muscle}
-                        onClick={() =>
-                          handleArrayToggle('muscle_atrophy', muscle)
-                        }
-                        color={
-                          formData.muscle_atrophy.includes(muscle)
-                            ? 'primary'
-                            : 'default'
-                        }
-                        variant={
-                          formData.muscle_atrophy.includes(muscle)
-                            ? 'filled'
-                            : 'outlined'
-                        }
-                      />
-                    ))}
-                  </Box>
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.crepitus}
-                        onChange={(e) =>
-                          handleInputChange('crepitus', e.target.checked)
-                        }
-                      />
-                    }
-                    label="Crepitus Present"
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-          </Grid>
-        );
-
-      case 4:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Special Tests
-              </Typography>
-              <Grid container spacing={2}>
-                {specialTests.map((test) => (
-                  <Grid item xs={12} sm={6} key={test.name}>
-                    <Box
-                      sx={{
-                        border: 1,
-                        borderColor: 'divider',
-                        p: 2,
-                        borderRadius: 1,
-                      }}
-                    >
-                      <Box
-                        sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
-                      >
-                        <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
-                          {test.name}
-                        </Typography>
-                        <Tooltip title={test.description}>
-                          <IconButton size="small">
-                            <InfoIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                      <RadioGroup
-                        row
-                        value={formData.tests_results[test.name] || ''}
-                        onChange={(e) =>
-                          handleSpecialTestResult(test.name, e.target.value)
-                        }
-                      >
-                        <FormControlLabel
-                          value="positive"
-                          control={<Radio />}
-                          label="Positive"
-                        />
-                        <FormControlLabel
-                          value="negative"
-                          control={<Radio />}
-                          label="Negative"
-                        />
-                        <FormControlLabel
-                          value="not_tested"
-                          control={<Radio />}
-                          label="Not Tested"
-                        />
-                      </RadioGroup>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Functional Tests
-              </Typography>
-              <Grid container spacing={2}>
-                {functionalTestsOptions.map((test) => (
-                  <Grid item xs={12} sm={6} key={test}>
-                    <FormControl fullWidth>
-                      <InputLabel>{test}</InputLabel>
-                      <Select
-                        value={formData.functional_tests[test] || ''}
-                        label={test}
-                        onChange={(e) =>
-                          handleFunctionalTestResult(test, e.target.value)
-                        }
-                      >
-                        <MenuItem value="normal">Normal</MenuItem>
-                        <MenuItem value="limited">Limited</MenuItem>
-                        <MenuItem value="painful">Painful</MenuItem>
-                        <MenuItem value="unable">Unable to Perform</MenuItem>
-                        <MenuItem value="not_tested">Not Tested</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                ))}
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Palpation Findings
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {tendernessLocations.map((location) => (
-                  <Chip
-                    key={location}
-                    label={location}
-                    onClick={() =>
-                      handleArrayToggle('tenderness_locations', location)
-                    }
-                    color={
-                      formData.tenderness_locations.includes(location)
-                        ? 'primary'
-                        : 'default'
-                    }
-                    variant={
-                      formData.tenderness_locations.includes(location)
-                        ? 'filled'
-                        : 'outlined'
-                    }
-                  />
-                ))}
-              </Box>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Red Flags Screening
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {redFlags.map((flag) => (
-                  <Chip
-                    key={flag}
-                    label={flag}
-                    onClick={() => handleArrayToggle('red_flags', flag)}
-                    color={
-                      formData.red_flags.includes(flag) ? 'error' : 'default'
-                    }
-                    variant={
-                      formData.red_flags.includes(flag) ? 'filled' : 'outlined'
-                    }
-                  />
-                ))}
-              </Box>
-            </Grid>
-          </Grid>
-        );
-
-      case 5:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Clinical Impression/Assessment"
-                value={formData.clinical_impression}
-                onChange={(e) =>
-                  handleInputChange('clinical_impression', e.target.value)
-                }
-                multiline
-                rows={3}
-                placeholder="Summary of findings and clinical reasoning..."
-                required
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Treatment Plan
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {treatmentOptions.map((treatment) => (
-                  <Chip
-                    key={treatment}
-                    label={treatment}
-                    onClick={() =>
-                      handleArrayToggle('treatment_plan', treatment)
-                    }
-                    color={
-                      formData.treatment_plan.includes(treatment)
-                        ? 'primary'
-                        : 'default'
-                    }
-                    variant={
-                      formData.treatment_plan.includes(treatment)
-                        ? 'filled'
-                        : 'outlined'
-                    }
-                  />
-                ))}
-              </Box>
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Short-term Goals (2-4 weeks)"
-                value={formData.goals.join(', ')}
-                onChange={(e) =>
-                  handleInputChange('goals', e.target.value.split(', '))
-                }
-                multiline
-                rows={2}
-                placeholder="e.g., Reduce pain by 50%, Improve overhead reach, Restore functional strength..."
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Precautions & Contraindications"
-                value={formData.precautions}
-                onChange={(e) =>
-                  handleInputChange('precautions', e.target.value)
-                }
-                multiline
-                rows={2}
-                placeholder="Any activity restrictions or precautions..."
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Imaging Findings"
-                value={formData.imaging_findings}
-                onChange={(e) =>
-                  handleInputChange('imaging_findings', e.target.value)
-                }
-                multiline
-                rows={2}
-                placeholder="X-ray, MRI, or US findings if available..."
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Previous Treatment/Surgery"
-                value={formData.previous_treatment}
-                onChange={(e) =>
-                  handleInputChange('previous_treatment', e.target.value)
-                }
-                multiline
-                rows={2}
-                placeholder="Any previous treatments, injections, or surgeries..."
-              />
-            </Grid>
-          </Grid>
-        );
-
-      default:
-        return null;
-    }
-  };
+  const handleSubmit = () => onSubmit(formData);
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="lg"
+      maxWidth="md"
       fullWidth
       scroll="paper"
     >
@@ -1163,43 +384,1497 @@ const AddShoulder = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
             <CloseIcon />
           </IconButton>
         </Box>
-        <Stepper activeStep={activeStep} sx={{ mt: 2 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
       </DialogTitle>
 
-      <DialogContent dividers>{renderStepContent(activeStep)}</DialogContent>
+      <DialogContent
+        dividers
+        sx={{
+          maxHeight: '70vh',
+          '&::-webkit-scrollbar': {
+            width: '16px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#f1f1f1',
+            borderRadius: '6px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#888',
+            borderRadius: '6px',
+            '&:hover': {
+              background: '#555',
+            },
+          },
+        }}
+      >
+        {/* Chief Complaint & History */}
+        <Typography variant="h5" gutterBottom sx={{ mt: 1 }}>
+          Chief Complaint & History
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Primary Complaint"
+              value={formData.complaints}
+              onChange={(e) => handleInputChange('complaints', e.target.value)}
+              multiline
+              rows={2}
+              required
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Passive Medical History (PMH)"
+              value={formData.pmh}
+              onChange={(e) => handleInputChange('pmh', e.target.value)}
+              multiline
+              rows={2}
+              required
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="History of Present Illness (HPI)"
+              value={formData.hpi}
+              onChange={(e) => handleInputChange('hpi', e.target.value)}
+              multiline
+              rows={2}
+              required
+            />
+          </Grid>
 
-      <DialogActions sx={{ p: 3, gap: 1 }}>
-        <Button
-          onClick={handleBack}
-          disabled={activeStep === 0 || isSubmitting}
-        >
-          Back
-        </Button>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Aggravating Factors"
+              value={formData.aggravating_factors}
+              onChange={(e) =>
+                handleInputChange('aggravating_factors', e.target.value)
+              }
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Easing Factors"
+              value={formData.easing_factors}
+              onChange={(e) =>
+                handleInputChange('easing_factors', e.target.value)
+              }
+            />
+          </Grid>
+        </Grid>
 
-        <Box sx={{ flex: 1 }} />
+        <Divider sx={{ my: 3 }} />
 
-        {activeStep === steps.length - 1 ? (
-          <LoadingButton
-            onClick={handleSubmit}
-            loading={isSubmitting}
-            variant="contained"
-            disabled={
-              !formData.primary_complaint || !formData.clinical_impression
-            }
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
           >
-            Submit Assessment
-          </LoadingButton>
-        ) : (
-          <Button onClick={handleNext} variant="contained">
-            Next
-          </Button>
-        )}
+            <Typography variant="subtitle2" sx={{ mt: 2 }}>
+              Red Flags Screening
+            </Typography>
+            <Button
+              startIcon={<AddIcon />}
+              onClick={() => toggleRemark('redFlags')}
+              size="small"
+              variant="outlined"
+            >
+              Other
+            </Button>
+          </Box>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+            {redFlags.map((flag) => (
+              <Chip
+                key={flag}
+                label={flag}
+                onClick={() => handleArrayToggle('red_flags', flag)}
+                color={formData.red_flags.includes(flag) ? 'error' : 'default'}
+                variant={
+                  formData.red_flags.includes(flag) ? 'filled' : 'outlined'
+                }
+                size="small"
+              />
+            ))}
+          </Box>
+          <Collapse in={showRemarks.redFlags}>
+            <TextField
+              fullWidth
+              label="Red Flags Remark"
+              value={formData.red_flags_remark}
+              onChange={(e) =>
+                handleInputChange('red_flags_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              sx={{ mb: 2 }}
+            />
+          </Collapse>
+        </Grid>
+
+        {/* Pain Assessment */}
+        <Typography variant="h5" gutterBottom>
+          Pain Assessment
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 1,
+              }}
+            >
+              <Typography variant="subtitle2">Pain Location</Typography>
+              <Button
+                startIcon={<AddIcon />}
+                onClick={() => toggleRemark('painLocation')}
+                size="small"
+                variant="outlined"
+              >
+                Other
+              </Button>
+            </Box>
+            <FormGroup row sx={{ flexWrap: 'wrap' }}>
+              {painLocations.map((location) => (
+                <FormControlLabel
+                  key={location}
+                  control={
+                    <Checkbox
+                      checked={formData.pain_location.includes(location)}
+                      onChange={() =>
+                        handleArrayToggle('pain_location', location)
+                      }
+                    />
+                  }
+                  label={location}
+                />
+              ))}
+            </FormGroup>
+            <Collapse in={showRemarks.painLocation}>
+              <TextField
+                fullWidth
+                label="Pain Location Remark"
+                value={formData.pain_location_remark}
+                onChange={(e) =>
+                  handleInputChange('pain_location_remark', e.target.value)
+                }
+                multiline
+                rows={2}
+                sx={{ mt: 1 }}
+              />
+            </Collapse>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography gutterBottom>Pain Level</Typography>
+
+            {/* Dynamic colored text */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mb: 1,
+              }}
+            >
+              <Typography variant="body1">
+                {formData.pain_level}/10 —{' '}
+                <Box
+                  component="span"
+                  sx={{
+                    fontWeight: 'bold',
+                    ml: 1,
+                    color:
+                      formData.pain_level <= 3
+                        ? '#00C853'
+                        : formData.pain_level <= 7
+                          ? '#FFD700'
+                          : '#D50000',
+                  }}
+                >
+                  {formData.pain_level <= 3
+                    ? 'Low'
+                    : formData.pain_level <= 7
+                      ? 'Medium'
+                      : 'High'}
+                </Box>
+              </Typography>
+            </Box>
+
+            {/* Slider */}
+            <Slider
+              value={Number(formData.pain_level)}
+              onChange={(_, value) =>
+                handleInputChange('pain_level', String(value))
+              }
+              min={0}
+              max={10}
+              step={1}
+              marks
+              valueLabelDisplay="auto"
+              sx={{
+                color:
+                  formData.pain_level <= 3
+                    ? '#00C853'
+                    : formData.pain_level <= 7
+                      ? '#FFD700'
+                      : '#ec1c1c',
+                '& .MuiSlider-thumb': {
+                  backgroundColor:
+                    formData.pain_level <= 3
+                      ? '#00C853'
+                      : formData.pain_level <= 7
+                        ? '#FFD700'
+                        : '#ec1c1c',
+                },
+                '& .MuiSlider-track': {
+                  backgroundColor:
+                    formData.pain_level <= 3
+                      ? '#00C853'
+                      : formData.pain_level <= 7
+                        ? '#FFD700'
+                        : '#ec1c1c',
+                },
+                '& .MuiSlider-rail': {
+                  opacity: 0.3,
+                },
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <FormControl component="fieldset">
+              <FormLabel>Pain Type</FormLabel>
+              <RadioGroup
+                row
+                value={formData.pain_type}
+                onChange={(e) => handleInputChange('pain_type', e.target.value)}
+              >
+                {['sharp', 'dull', 'burning', 'tingling', 'throbbing'].map(
+                  (type) => (
+                    <FormControlLabel
+                      key={type}
+                      value={type}
+                      control={<Radio />}
+                      label={type}
+                    />
+                  ),
+                )}
+              </RadioGroup>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formData.pain_radiation}
+                  onChange={(e) =>
+                    handleInputChange('pain_radiation', e.target.checked)
+                  }
+                />
+              }
+              label="Pain Radiates"
+            />
+            {formData.pain_radiation && (
+              <TextField
+                fullWidth
+                label="Radiation Location"
+                value={formData.radiation_location}
+                onChange={(e) =>
+                  handleInputChange('radiation_location', e.target.value)
+                }
+                sx={{ mt: 1 }}
+              />
+            )}
+          </Grid>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 1,
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ mt: 2 }}>
+              Observations
+            </Typography>
+            <Button
+              startIcon={<AddIcon />}
+              onClick={() => toggleRemark('observations')}
+              size="small"
+              variant="outlined"
+            >
+              Other
+            </Button>
+          </Box>
+          <FormGroup row>
+            {[
+              'Swelling Present',
+              'Bruising Present',
+              'Deformity Present',
+              'Muscle Atrophy',
+            ].map((label, i) => (
+              <FormControlLabel
+                key={label}
+                control={
+                  <Checkbox
+                    checked={
+                      formData[
+                        [
+                          'swelling_present',
+                          'bruising_present',
+                          'deformity_present',
+                          'muscle_atrophy',
+                        ][i]
+                      ]
+                    }
+                    onChange={(e) =>
+                      handleInputChange(
+                        [
+                          'swelling_present',
+                          'bruising_present',
+                          'deformity_present',
+                          'muscle_atrophy',
+                        ][i],
+                        e.target.checked,
+                      )
+                    }
+                  />
+                }
+                label={label}
+              />
+            ))}
+          </FormGroup>
+          <Collapse in={showRemarks.observation}>
+            <TextField
+              fullWidth
+              label="Observation Remark"
+              value={formData.observation_remark}
+              onChange={(e) =>
+                handleInputChange('observation_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              sx={{ mt: 1 }}
+            />
+          </Collapse>
+        </Grid>
+
+        {/* ROM Assessment */}
+        {/* ROM Assessment */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+            Range of Motion
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>ROM</TableCell>
+                  <TableCell align="center">Right</TableCell>
+                  <TableCell align="center">Left</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Box>
+                      <Typography variant="body2">Flexion (N=180°)</Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.range_of_motion.flexion?.right || ''}
+                      onChange={(e) =>
+                        handleRomChange('flexion', 'right', e.target.value)
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.range_of_motion.flexion?.left || ''}
+                      onChange={(e) =>
+                        handleRomChange('flexion', 'left', e.target.value)
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Box>
+                      <Typography variant="body2">
+                        Abduction (N=180°)
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.range_of_motion.abduction?.right || ''}
+                      onChange={(e) =>
+                        handleRomChange('abduction', 'right', e.target.value)
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.range_of_motion.abduction?.left || ''}
+                      onChange={(e) =>
+                        handleRomChange('abduction', 'left', e.target.value)
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Box>
+                      <Typography variant="body2">
+                        Internal Rotation (N=70°)
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={
+                        formData.range_of_motion.internal_rotation?.right || ''
+                      }
+                      onChange={(e) =>
+                        handleRomChange(
+                          'internal_rotation',
+                          'right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={
+                        formData.range_of_motion.internal_rotation?.left || ''
+                      }
+                      onChange={(e) =>
+                        handleRomChange(
+                          'internal_rotation',
+                          'left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Box>
+                      <Typography variant="body2">
+                        External Rotation (N=90°)
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={
+                        formData.range_of_motion.external_rotation?.right || ''
+                      }
+                      onChange={(e) =>
+                        handleRomChange(
+                          'external_rotation',
+                          'right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={
+                        formData.range_of_motion.external_rotation?.left || ''
+                      }
+                      onChange={(e) =>
+                        handleRomChange(
+                          'external_rotation',
+                          'left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TextField
+            fullWidth
+            label="Remark"
+            value={formData.rom_remark}
+            onChange={(e) => handleInputChange('rom_remark', e.target.value)}
+            size="small"
+            sx={{ mt: 1 }}
+            multiline
+            rows={2}
+          />
+        </Grid>
+
+        {/* Palpation Assessment */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+            Palpation
+          </Typography>
+
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableBody>
+                {palpationTests.map((test) => (
+                  <TableRow key={test.key}>
+                    <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                      <Typography variant="body2">{test.label}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData[`palpations_${test.key}`] || ''}
+                          onChange={(e) =>
+                            handlePalpationChange(test.key, e.target.value)
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {tendernessOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TextField
+            fullWidth
+            label="Remark"
+            value={formData.palpations_remark}
+            onChange={(e) =>
+              handleInputChange('palpations_remark', e.target.value)
+            }
+            size="small"
+            sx={{ mt: 1 }}
+            multiline
+            rows={2}
+          />
+        </Grid>
+
+        {/* Neurological Scan Section */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+            Neurological Scan
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell align="center">Right</TableCell>
+                  <TableCell align="center">Left</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {/* Reflexes */}
+                <TableRow>
+                  <TableCell colSpan={3} sx={{ backgroundColor: 'grey.100' }}>
+                    <Typography variant="subtitle2">Reflexes</Typography>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    C₅-C₆
+                  </TableCell>
+                  <TableCell align="center">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={
+                          formData.neurological_scan.reflexes.c5_c6.right || ''
+                        }
+                        onChange={(e) =>
+                          handleNeurologicalChange(
+                            'reflexes',
+                            'c5_c6',
+                            'right',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {neurologicalOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                  <TableCell align="center">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={
+                          formData.neurological_scan.reflexes.c5_c6.left || ''
+                        }
+                        onChange={(e) =>
+                          handleNeurologicalChange(
+                            'reflexes',
+                            'c5_c6',
+                            'left',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {neurologicalOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    C₇
+                  </TableCell>
+                  <TableCell align="center">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={
+                          formData.neurological_scan.reflexes.c7.right || ''
+                        }
+                        onChange={(e) =>
+                          handleNeurologicalChange(
+                            'reflexes',
+                            'c7',
+                            'right',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {neurologicalOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                  <TableCell align="center">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={
+                          formData.neurological_scan.reflexes.c7.left || ''
+                        }
+                        onChange={(e) =>
+                          handleNeurologicalChange(
+                            'reflexes',
+                            'c7',
+                            'left',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {neurologicalOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    L₃-L₄
+                  </TableCell>
+                  <TableCell align="center">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={
+                          formData.neurological_scan.reflexes.l3_l4.right || ''
+                        }
+                        onChange={(e) =>
+                          handleNeurologicalChange(
+                            'reflexes',
+                            'l3_l4',
+                            'right',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {neurologicalOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                  <TableCell align="center">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={
+                          formData.neurological_scan.reflexes.l3_l4.left || ''
+                        }
+                        onChange={(e) =>
+                          handleNeurologicalChange(
+                            'reflexes',
+                            'l3_l4',
+                            'left',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {neurologicalOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+
+                {/* Sensory */}
+                <TableRow>
+                  <TableCell
+                    colSpan={3}
+                    sx={{ backgroundColor: 'grey.100', mt: 2 }}
+                  >
+                    <Typography variant="subtitle2">Sensory</Typography>
+                  </TableCell>
+                </TableRow>
+                {['c5', 'c6', 'c7', 'c8', 't1'].map((nerve) => (
+                  <TableRow key={nerve}>
+                    <TableCell component="th" scope="row">
+                      {nerve.toUpperCase()}
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.neurological_scan.sensory[nerve].right ||
+                            ''
+                          }
+                          onChange={(e) =>
+                            handleNeurologicalChange(
+                              'sensory',
+                              nerve,
+                              'right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {neurologicalOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.neurological_scan.sensory[nerve].left || ''
+                          }
+                          onChange={(e) =>
+                            handleNeurologicalChange(
+                              'sensory',
+                              nerve,
+                              'left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {neurologicalOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TextField
+            fullWidth
+            label="Neurological Scan Remark"
+            value={formData.neurological_scan_remark}
+            onChange={(e) =>
+              handleInputChange('neurological_scan_remark', e.target.value)
+            }
+            size="small"
+            sx={{ mt: 1 }}
+            multiline
+            rows={2}
+          />
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+        {/* Physical Examination */}
+        <Typography variant="h5" gutterBottom>
+          Physical Examination
+        </Typography>
+        <Grid container spacing={2}>
+          {/* Strength Assessment */}
+          <Grid item xs={12}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Strength
+            </Typography>
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell></TableCell>
+                    <TableCell align="center">Right</TableCell>
+                    <TableCell align="center">Left</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {strengthTests.map((test) => (
+                    <TableRow key={test.key}>
+                      <TableCell component="th" scope="row">
+                        {test.label}
+                      </TableCell>
+                      <TableCell align="center">
+                        <FormControl size="small" fullWidth>
+                          <Select
+                            value={formData[`strength_${test.key}_right`] || ''}
+                            onChange={(e) =>
+                              handleStrengthChange(
+                                test.key,
+                                'right',
+                                e.target.value,
+                              )
+                            }
+                            displayEmpty
+                          >
+                            <MenuItem value="">
+                              <em>-Select-</em>
+                            </MenuItem>
+                            {strengthOptions.map((option) => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </TableCell>
+                      <TableCell align="center">
+                        <FormControl size="small" fullWidth>
+                          <Select
+                            value={formData[`strength_${test.key}_left`] || ''}
+                            onChange={(e) =>
+                              handleStrengthChange(
+                                test.key,
+                                'left',
+                                e.target.value,
+                              )
+                            }
+                            displayEmpty
+                          >
+                            <MenuItem value="">
+                              <em>-Select-</em>
+                            </MenuItem>
+                            {strengthOptions.map((option) => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <TextField
+              fullWidth
+              label="Remark"
+              value={formData.strength_remark}
+              onChange={(e) =>
+                handleInputChange('strength_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              required
+              sx={{ mt: 1 }}
+            />
+          </Grid>
+
+          {/* Special Tests */}
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+              Special Test
+            </Typography>
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Test</TableCell>
+                    <TableCell align="center">RT</TableCell>
+                    <TableCell align="center">LT</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {/* Girth measurements */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">
+                        Girth measurements
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
+                        <TextField
+                          size="small"
+                          type="number"
+                          value={formData.special_tests?.girth_right || ''}
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'girth_right',
+                              e.target.value,
+                            )
+                          }
+                          placeholder="cm"
+                          sx={{ width: 80 }}
+                        />
+                        <Typography variant="body2">cm</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
+                        <TextField
+                          size="small"
+                          type="number"
+                          value={formData.special_tests?.girth_left || ''}
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'girth_left',
+                              e.target.value,
+                            )
+                          }
+                          placeholder="cm"
+                          sx={{ width: 80 }}
+                        />
+                        <Typography variant="body2">cm</Typography>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Capillary refill */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">
+                        Capillary refill (N=3)
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.capillary_refill_right || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'capillary_refill_right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="<2">&lt;2 sec</MenuItem>
+                          <MenuItem value="2-3">2-3 sec</MenuItem>
+                          <MenuItem value=">3">&gt;3 sec</MenuItem>
+                          <MenuItem value="delayed">Delayed</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.capillary_refill_left || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'capillary_refill_left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="<2">&lt;2 sec</MenuItem>
+                          <MenuItem value="2-3">2-3 sec</MenuItem>
+                          <MenuItem value=">3">&gt;3 sec</MenuItem>
+                          <MenuItem value="delayed">Delayed</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Pitting edema */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">Pitting edema</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.pitting_edema_right || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'pitting_edema_right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="none">None</MenuItem>
+                          <MenuItem value="1+">1+</MenuItem>
+                          <MenuItem value="2+">2+</MenuItem>
+                          <MenuItem value="3+">3+</MenuItem>
+                          <MenuItem value="4+">4+</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.pitting_edema_left || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'pitting_edema_left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="none">None</MenuItem>
+                          <MenuItem value="1+">1+</MenuItem>
+                          <MenuItem value="2+">2+</MenuItem>
+                          <MenuItem value="3+">3+</MenuItem>
+                          <MenuItem value="4+">4+</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TextField
+              fullWidth
+              label="Remark"
+              value={formData.special_tests_remark}
+              onChange={(e) =>
+                handleInputChange('special_tests_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              sx={{ mt: 1 }}
+            />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+        {/* Functional Status */}
+        <Typography variant="h5" gutterBottom>
+          Functional Status
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 1,
+              }}
+            >
+              <Typography variant="subtitle2">
+                Functional Limitations
+              </Typography>
+              <Button
+                startIcon={<AddIcon />}
+                onClick={() => toggleRemark('functionalLimitations')}
+                size="small"
+                variant="outlined"
+              >
+                Other
+              </Button>
+            </Box>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+              {functionalLimitations.map((limitation) => (
+                <Chip
+                  key={limitation}
+                  label={limitation}
+                  onClick={() =>
+                    handleArrayToggle('functional_limitations_adl', limitation)
+                  }
+                  color={
+                    formData.functional_limitations_adl.includes(limitation)
+                      ? 'primary'
+                      : 'default'
+                  }
+                  variant="outlined"
+                  size="small"
+                />
+              ))}
+            </Box>
+            <Collapse in={showRemarks.functionalLimitations}>
+              <TextField
+                fullWidth
+                label="Functional Limitations Remark"
+                value={formData.functional_limitations_adl_remark}
+                onChange={(e) =>
+                  handleInputChange(
+                    'functional_limitations_adl_remark',
+                    e.target.value,
+                  )
+                }
+                multiline
+                rows={2}
+              />
+            </Collapse>
+          </Grid>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 1,
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+              Clinical Impressions
+            </Typography>
+            <Button
+              startIcon={<AddIcon />}
+              onClick={() => toggleRemark('clinicalImpression')}
+              size="small"
+              variant="outlined"
+            >
+              Other
+            </Button>
+          </Box>
+          <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
+            Mechanical deficits/Impairments found on examination
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+            {[
+              'Decreased AROM',
+              'Decreased PROM and accessory motion',
+              'Decreased strength/coordination of glenohumeral muscles',
+              'Decreased soft tissue mobility at scar and fascial planes',
+              'Adverse neural tension',
+              'Decreased strength/coordination of scapular stabilizers',
+              'Hypermobility of the GH joint',
+              'A/C or S/C dysfunction',
+              'Thoracic spine dysfunction',
+              'Hypertonic upper quarter musculature',
+              'Postural dysfunction',
+              'Hypomobility of glenohumeral joint',
+              'Tendonitis of associated musculature',
+              'Ligament stress test positive for superior glenohumeral, coracohumeral, anterior inferior glenohumeral, posterior inferior glenohumeral ligaments',
+            ].map((impression) => (
+              <Chip
+                key={impression}
+                label={impression}
+                onClick={() =>
+                  handleArrayToggle('clinical_impression', impression)
+                }
+                color={
+                  formData.clinical_impression.includes(impression)
+                    ? 'primary'
+                    : 'default'
+                }
+                variant={
+                  formData.clinical_impression.includes(impression)
+                    ? 'filled'
+                    : 'outlined'
+                }
+                size="small"
+                sx={{ mb: 1 }}
+              />
+            ))}
+          </Box>
+          <Collapse in={showRemarks.clinicalImpression}>
+            <TextField
+              fullWidth
+              label="Remarks"
+              value={formData.clinical_impression_remark}
+              onChange={(e) =>
+                handleInputChange('clinical_impression_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              placeholder="Additional clinical impressions..."
+            />
+          </Collapse>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+        <Typography variant="h5" sx={{ mb: 2 }} gutterBottom>
+          Medical Diagnosis
+        </Typography>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Medical Diagnosis"
+            value={formData.medical_diagnosis}
+            onChange={(e) =>
+              handleInputChange('medical_diagnosis', e.target.value)
+            }
+            multiline
+            rows={2}
+            required
+          />
+        </Grid>
+        <Divider sx={{ my: 3 }} />
+        {/* Assessment & Plan */}
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 1,
+              }}
+            >
+              <Typography variant="subtitle1">Treatment Plan</Typography>
+              <Button
+                startIcon={<AddIcon />}
+                onClick={() => toggleRemark('treatmentPlan')}
+                size="small"
+                variant="outlined"
+              >
+                Other
+              </Button>
+            </Box>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+              {treatmentOptions.map((treatment) => {
+                const selected = formData.treatment_plans.includes(treatment);
+                return (
+                  <Chip
+                    key={treatment}
+                    label={treatment}
+                    onClick={() =>
+                      handleArrayToggle('treatment_plans', treatment)
+                    }
+                    color={selected ? 'primary' : 'default'}
+                    variant={selected ? 'filled' : 'outlined'}
+                    size="small"
+                  />
+                );
+              })}
+            </Box>
+            <Collapse in={showRemarks.treatmentPlan}>
+              <TextField
+                fullWidth
+                label="Treatment Plan Remark"
+                value={formData.treatment_plans_remark}
+                onChange={(e) =>
+                  handleInputChange('treatment_plans_remark', e.target.value)
+                }
+                multiline
+                rows={2}
+              />
+            </Collapse>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Short-term Goal"
+              value={formData.short_term_goal}
+              onChange={(e) =>
+                handleInputChange('short_term_goal', e.target.value)
+              }
+              placeholder="Improve shoulder range of motion, Reduce pain during overhead activities..."
+            />
+          </Grid>
+        </Grid>
+      </DialogContent>
+
+      <DialogActions sx={{ p: 2 }}>
+        <Button onClick={onClose} disabled={isSubmitting}>
+          Cancel
+        </Button>
+        <LoadingButton
+          onClick={handleSubmit}
+          loading={isSubmitting}
+          variant="contained"
+          // disabled={!formData.complaints || !formData.clinical_impression}
+        >
+          Submit Assessment
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );

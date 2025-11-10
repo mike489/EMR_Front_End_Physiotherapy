@@ -21,6 +21,7 @@ import {
   IconPhotoSensor2,
   IconRadio,
   IconDoorEnter,
+  IconMedicalCross,
 } from '@tabler/icons-react';
 import getRolesAndPermissionsFromToken from 'utils/auth/getRolesAndPermissionsFromToken';
 
@@ -47,6 +48,7 @@ const icons = {
   IconPhotoSensor2,
   IconRadio,
   IconDoorEnter,
+  IconMedicalCross,
 };
 
 // ==============================|| Kpi_basic_config  MENU ITEMS ||============================== //
@@ -71,6 +73,7 @@ export const settings = () => {
     'read_laboratory_test_group',
     'read_radiology_department',
     'read_room',
+    'read_medical_center',
   ];
 
   const permissionMap = {
@@ -143,6 +146,12 @@ export const settings = () => {
       title: 'Monitoring Settings',
       url: '/monitoring-settings',
       icon: icons.IconAdjustmentsCog,
+    },
+    read_medical_center: {
+      id: 'medical-centers',
+      title: 'Medical Centers',
+      url: '/medical-centers',
+      icon: icons.IconMedicalCross,
     },
   };
 

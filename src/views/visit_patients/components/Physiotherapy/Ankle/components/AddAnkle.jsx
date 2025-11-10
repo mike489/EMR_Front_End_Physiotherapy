@@ -164,32 +164,26 @@ const AddAnkle = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
   ];
 
   // Ankle-specific special tests
-  // Ankle-specific special tests
   const specialTests = [
     {
       name: 'Anterior Drawer Test',
       description: 'Anterior talofibular ligament integrity',
-      sideSpecific: true,
     },
     {
       name: 'Thompson Test',
       description: 'Achilles tendon rupture',
-      sideSpecific: false,
     },
     {
       name: 'Squeeze Test',
       description: 'Syndesmotic injury',
-      sideSpecific: false,
     },
     {
       name: 'Talar Tilt Test',
       description: 'Calcaneofibular ligament integrity',
-      sideSpecific: true,
     },
     {
       name: 'External Rotation Test',
       description: 'Syndesmosis injury',
-      sideSpecific: true,
     },
   ];
 
@@ -287,7 +281,10 @@ const AddAnkle = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
   const handleSpecialTestResult = (testName, result) =>
     setFormData((prev) => ({
       ...prev,
-      special_tests: { ...prev.special_tests, [testName]: result },
+      special_tests: {
+        ...prev.special_tests,
+        [testName]: result,
+      },
     }));
 
   const handleStrengthChange = (testKey, side, value) => {
@@ -650,72 +647,214 @@ const AddAnkle = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 3 }} />
-
-        {/* Functional Status */}
-        <Typography variant="h5" gutterBottom>
-          Functional Status
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
-              }}
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 1,
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ mt: 2 }}>
+              Observations
+            </Typography>
+            <Button
+              startIcon={<AddIcon />}
+              onClick={() => toggleRemark('observations')}
+              size="small"
+              variant="outlined"
             >
-              <Typography variant="subtitle2">
-                Functional Limitations
-              </Typography>
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() => toggleRemark('functionalLimitations')}
-                size="small"
-                variant="outlined"
-              >
-                Other
-              </Button>
-            </Box>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {functionalLimitations.map((limitation) => (
-                <Chip
-                  key={limitation}
-                  label={limitation}
-                  onClick={() =>
-                    handleArrayToggle('functional_limitations_adl', limitation)
-                  }
-                  color={
-                    formData.functional_limitations_adl.includes(limitation)
-                      ? 'primary'
-                      : 'default'
-                  }
-                  variant="outlined"
-                  size="small"
-                />
-              ))}
-            </Box>
-            <Collapse in={showRemarks.functionalLimitations}>
-              <TextField
-                fullWidth
-                label="Functional Limitations Remark"
-                value={formData.functional_limitations_adl_remark}
-                onChange={(e) =>
-                  handleInputChange(
-                    'functional_limitations_adl_remark',
-                    e.target.value,
-                  )
+              Other
+            </Button>
+          </Box>
+          <FormGroup row>
+            {[
+              'Swelling Present',
+              'Bruising Present',
+              'Deformity Present',
+              'Muscle Atrophy',
+            ].map((label, i) => (
+              <FormControlLabel
+                key={label}
+                control={
+                  <Checkbox
+                    checked={
+                      formData[
+                        [
+                          'swelling_present',
+                          'bruising_present',
+                          'deformity_present',
+                          'muscle_atrophy',
+                        ][i]
+                      ]
+                    }
+                    onChange={(e) =>
+                      handleInputChange(
+                        [
+                          'swelling_present',
+                          'bruising_present',
+                          'deformity_present',
+                          'muscle_atrophy',
+                        ][i],
+                        e.target.checked,
+                      )
+                    }
+                  />
                 }
-                multiline
-                rows={2}
+                label={label}
               />
-            </Collapse>
-          </Grid>
+            ))}
+          </FormGroup>
+          <Collapse in={showRemarks.observation}>
+            <TextField
+              fullWidth
+              label="Observation Remark"
+              value={formData.observation_remark}
+              onChange={(e) =>
+                handleInputChange('observation_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              sx={{ mt: 1 }}
+            />
+          </Collapse>
+        </Grid>
+
+        {/* ROM Assessment */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+            Range of Motion
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell align="center">Right</TableCell>
+                  <TableCell align="center">Left</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {romTests.map((test) => (
+                  <TableRow key={test.key}>
+                    <TableCell component="th" scope="row">
+                      <Box>
+                        <Typography variant="body2">{test.label}</Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          (N={test.normal})
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="medium"
+                        type="number"
+                        value={formData.range_of_motion[test.key]?.right || ''}
+                        onChange={(e) =>
+                          handleRomChange(test.key, 'right', e.target.value)
+                        }
+                        placeholder="°"
+                        sx={{ width: 120 }}
+                        InputProps={{
+                          endAdornment: (
+                            <Typography variant="body2" sx={{ ml: 0.5 }}>
+                              °
+                            </Typography>
+                          ),
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="medium"
+                        type="number"
+                        value={formData.range_of_motion[test.key]?.left || ''}
+                        onChange={(e) =>
+                          handleRomChange(test.key, 'left', e.target.value)
+                        }
+                        placeholder="°"
+                        sx={{ width: 120 }}
+                        InputProps={{
+                          endAdornment: (
+                            <Typography variant="body2" sx={{ ml: 0.5 }}>
+                              °
+                            </Typography>
+                          ),
+                        }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TextField
+            fullWidth
+            label="Remark"
+            value={formData.rom_remark}
+            onChange={(e) => handleInputChange('rom_remark', e.target.value)}
+            size="small"
+            sx={{ mt: 1 }}
+            multiline
+            rows={2}
+          />
+        </Grid>
+
+        {/* Palpation Assessment */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+            Palpation
+          </Typography>
+
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableBody>
+                {palpationTests.map((test) => (
+                  <TableRow key={test.key}>
+                    <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                      <Typography variant="body2">{test.label}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData[`palpations_${test.key}`] || ''}
+                          onChange={(e) =>
+                            handlePalpationChange(test.key, e.target.value)
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {tendernessOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TextField
+            fullWidth
+            label="Remark"
+            value={formData.palpations_remark}
+            onChange={(e) =>
+              handleInputChange('palpations_remark', e.target.value)
+            }
+            size="small"
+            sx={{ mt: 1 }}
+            multiline
+            rows={2}
+          />
         </Grid>
 
         <Divider sx={{ my: 3 }} />
-
         {/* Physical Examination */}
         <Typography variant="h5" gutterBottom>
           Physical Examination
@@ -806,147 +945,6 @@ const AddAnkle = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
               rows={2}
               required
               sx={{ mt: 1 }}
-            />
-          </Grid>
-
-          {/* Palpation Assessment */}
-          <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Palpation
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-              These structures presented tender
-            </Typography>
-            <TableContainer component={Paper} variant="outlined">
-              <Table size="small">
-                <TableBody>
-                  {palpationTests.map((test) => (
-                    <TableRow key={test.key}>
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        sx={{ width: '40%' }}
-                      >
-                        <Typography variant="body2">{test.label}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <FormControl size="small" fullWidth>
-                          <Select
-                            value={formData[`palpations_${test.key}`] || ''}
-                            onChange={(e) =>
-                              handlePalpationChange(test.key, e.target.value)
-                            }
-                            displayEmpty
-                          >
-                            <MenuItem value="">
-                              <em>-Select-</em>
-                            </MenuItem>
-                            {tendernessOptions.map((option) => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TextField
-              fullWidth
-              label="Remark"
-              value={formData.palpations_remark}
-              onChange={(e) =>
-                handleInputChange('palpations_remark', e.target.value)
-              }
-              size="small"
-              sx={{ mt: 1 }}
-              multiline
-              rows={2}
-            />
-          </Grid>
-
-          {/* ROM Assessment */}
-          <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Range of Motion
-            </Typography>
-            <TableContainer component={Paper} variant="outlined">
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell></TableCell>
-                    <TableCell align="center">Right</TableCell>
-                    <TableCell align="center">Left</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {romTests.map((test) => (
-                    <TableRow key={test.key}>
-                      <TableCell component="th" scope="row">
-                        <Box>
-                          <Typography variant="body2">{test.label}</Typography>
-                          <Typography variant="caption" color="textSecondary">
-                            (N={test.normal})
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center">
-                        <TextField
-                          size="medium"
-                          type="number"
-                          value={
-                            formData.range_of_motion[test.key]?.right || ''
-                          }
-                          onChange={(e) =>
-                            handleRomChange(test.key, 'right', e.target.value)
-                          }
-                          placeholder="°"
-                          sx={{ width: 120 }}
-                          InputProps={{
-                            endAdornment: (
-                              <Typography variant="body2" sx={{ ml: 0.5 }}>
-                                °
-                              </Typography>
-                            ),
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <TextField
-                          size="medium"
-                          type="number"
-                          value={formData.range_of_motion[test.key]?.left || ''}
-                          onChange={(e) =>
-                            handleRomChange(test.key, 'left', e.target.value)
-                          }
-                          placeholder="°"
-                          sx={{ width: 120 }}
-                          InputProps={{
-                            endAdornment: (
-                              <Typography variant="body2" sx={{ ml: 0.5 }}>
-                                °
-                              </Typography>
-                            ),
-                          }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TextField
-              fullWidth
-              label="Remark"
-              value={formData.rom_remark}
-              onChange={(e) => handleInputChange('rom_remark', e.target.value)}
-              size="small"
-              sx={{ mt: 1 }}
-              multiline
-              rows={2}
             />
           </Grid>
 
@@ -1054,199 +1052,257 @@ const AddAnkle = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
             />
           </Grid>
 
+          {/* Special Tests */}
           <Grid item xs={12}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
-              }}
-            >
-              <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-                Clinical Impressions
-              </Typography>
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() => toggleRemark('clinicalImpression')}
-                size="small"
-                variant="outlined"
-              >
-                Other
-              </Button>
-            </Box>
-            <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-              Mechanical deficits/Impairments found on examination
+            <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+              Special Test
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {clinicalImpressionOptions.map((impression) => (
-                <Chip
-                  key={impression}
-                  label={impression}
-                  onClick={() =>
-                    handleArrayToggle('clinical_impression', impression)
-                  }
-                  color={
-                    formData.clinical_impression.includes(impression)
-                      ? 'primary'
-                      : 'default'
-                  }
-                  variant={
-                    formData.clinical_impression.includes(impression)
-                      ? 'filled'
-                      : 'outlined'
-                  }
-                  size="small"
-                />
-              ))}
-            </Box>
-            <Collapse in={showRemarks.clinicalImpression}>
-              <TextField
-                fullWidth
-                label="Clinical Impression Remark"
-                value={formData.clinical_impression_remark}
-                onChange={(e) =>
-                  handleInputChange(
-                    'clinical_impression_remark',
-                    e.target.value,
-                  )
-                }
-                multiline
-                rows={2}
-                placeholder="Specify other clinical impressions..."
-              />
-            </Collapse>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 2 }}>
-              Special Tests
-            </Typography>
-            <Grid container spacing={1}>
-              {specialTests.map((test) => (
-                <Grid item xs={12} sm={6} key={test.name}>
-                  <Box
-                    sx={{
-                      border: 1,
-                      borderColor: 'divider',
-                      p: 1,
-                      borderRadius: 1,
-                    }}
-                  >
-                    <Box
-                      sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}
-                    >
-                      <Typography variant="body2" sx={{ flexGrow: 1 }}>
-                        {test.name}
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Test</TableCell>
+                    <TableCell align="center">RT</TableCell>
+                    <TableCell align="center">LT</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {/* Girth measurements */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">
+                        Girth measurements
                       </Typography>
-                      <Tooltip title={test.description}>
-                        <IconButton size="small">
-                          <InfoIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                    <RadioGroup
-                      row
-                      value={formData.special_tests[test.name] || ''}
-                      onChange={(e) =>
-                        handleSpecialTestResult(test.name, e.target.value)
-                      }
-                    >
-                      {['positive', 'negative', 'not_tested'].map((opt) => (
-                        <FormControlLabel
-                          key={opt}
-                          value={opt}
-                          control={<Radio size="small" />}
-                          label={opt}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
+                        <TextField
+                          size="small"
+                          type="number"
+                          value={formData.special_tests?.girth_right || ''}
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'girth_right',
+                              e.target.value,
+                            )
+                          }
+                          placeholder="cm"
+                          sx={{ width: 80 }}
                         />
-                      ))}
-                    </RadioGroup>
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
-          </Grid>
+                        <Typography variant="body2">cm</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
+                        <TextField
+                          size="small"
+                          type="number"
+                          value={formData.special_tests?.girth_left || ''}
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'girth_left',
+                              e.target.value,
+                            )
+                          }
+                          placeholder="cm"
+                          sx={{ width: 80 }}
+                        />
+                        <Typography variant="body2">cm</Typography>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
 
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
-              }}
-            >
-              <Typography variant="subtitle2" sx={{ mt: 2 }}>
-                Observations
-              </Typography>
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() => toggleRemark('observations')}
-                size="small"
-                variant="outlined"
-              >
-                Other
-              </Button>
-            </Box>
-            <FormGroup row>
-              {[
-                'Swelling Present',
-                'Bruising Present',
-                'Deformity Present',
-                'Muscle Atrophy',
-              ].map((label, i) => (
-                <FormControlLabel
-                  key={label}
-                  control={
-                    <Checkbox
-                      checked={
-                        formData[
-                          [
-                            'swelling_present',
-                            'bruising_present',
-                            'deformity_present',
-                            'muscle_atrophy',
-                          ][i]
-                        ]
-                      }
-                      onChange={(e) =>
-                        handleInputChange(
-                          [
-                            'swelling_present',
-                            'bruising_present',
-                            'deformity_present',
-                            'muscle_atrophy',
-                          ][i],
-                          e.target.checked,
-                        )
-                      }
-                    />
-                  }
-                  label={label}
-                />
-              ))}
-            </FormGroup>
-            <Collapse in={showRemarks.observation}>
-              <TextField
-                fullWidth
-                label="Observation Remark"
-                value={formData.observation_remark}
-                onChange={(e) =>
-                  handleInputChange('observation_remark', e.target.value)
-                }
-                multiline
-                rows={2}
-                sx={{ mt: 1 }}
-              />
-            </Collapse>
+                  {/* Capillary refill */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">
+                        Capillary refill (N=3)
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.capillary_refill_right || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'capillary_refill_right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="<2">&lt;2 sec</MenuItem>
+                          <MenuItem value="2-3">2-3 sec</MenuItem>
+                          <MenuItem value=">3">&gt;3 sec</MenuItem>
+                          <MenuItem value="delayed">Delayed</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.capillary_refill_left || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'capillary_refill_left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="<2">&lt;2 sec</MenuItem>
+                          <MenuItem value="2-3">2-3 sec</MenuItem>
+                          <MenuItem value=">3">&gt;3 sec</MenuItem>
+                          <MenuItem value="delayed">Delayed</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Pitting edema */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">Pitting edema</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.pitting_edema_right || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'pitting_edema_right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="none">None</MenuItem>
+                          <MenuItem value="1+">1+</MenuItem>
+                          <MenuItem value="2+">2+</MenuItem>
+                          <MenuItem value="3+">3+</MenuItem>
+                          <MenuItem value="4+">4+</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.pitting_edema_left || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'pitting_edema_left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="none">None</MenuItem>
+                          <MenuItem value="1+">1+</MenuItem>
+                          <MenuItem value="2+">2+</MenuItem>
+                          <MenuItem value="3+">3+</MenuItem>
+                          <MenuItem value="4+">4+</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Pedal pulse */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">Pedal pulse</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.pedal_pulse_right || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'pedal_pulse_right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="present">Present</MenuItem>
+                          <MenuItem value="absent">Absent</MenuItem>
+                          <MenuItem value="diminished">Diminished</MenuItem>
+                          <MenuItem value="brisk">Brisk</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.special_tests?.pedal_pulse_left || ''}
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'pedal_pulse_left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="present">Present</MenuItem>
+                          <MenuItem value="absent">Absent</MenuItem>
+                          <MenuItem value="diminished">Diminished</MenuItem>
+                          <MenuItem value="brisk">Brisk</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TextField
+              fullWidth
+              label="Remark"
+              value={formData.special_tests_remark}
+              onChange={(e) =>
+                handleInputChange('special_tests_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              sx={{ mt: 1 }}
+            />
           </Grid>
         </Grid>
 
         <Divider sx={{ my: 3 }} />
-
-        {/* Assessment & Plan */}
-        <Typography variant="h5" sx={{ mb: 2 }} gutterBottom>
-          Assessment & Plan
+        {/* Functional Status */}
+        <Typography variant="h5" gutterBottom>
+          Functional Status
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12}>
@@ -1258,10 +1314,12 @@ const AddAnkle = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
                 mb: 1,
               }}
             >
-              <Typography variant="subtitle2">Assessment Plan</Typography>
+              <Typography variant="subtitle2">
+                Functional Limitations
+              </Typography>
               <Button
                 startIcon={<AddIcon />}
-                onClick={() => toggleRemark('assessmentPlan')}
+                onClick={() => toggleRemark('functionalLimitations')}
                 size="small"
                 variant="outlined"
               >
@@ -1269,31 +1327,31 @@ const AddAnkle = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
               </Button>
             </Box>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {AssessmentOptions.map((assessment) => {
-                const selected =
-                  formData.clinical_impression.includes(assessment);
-                return (
-                  <Chip
-                    key={assessment}
-                    label={assessment}
-                    onClick={() =>
-                      handleArrayToggle('clinical_impression', assessment)
-                    }
-                    color={selected ? 'primary' : 'default'}
-                    variant={selected ? 'filled' : 'outlined'}
-                    size="small"
-                  />
-                );
-              })}
+              {functionalLimitations.map((limitation) => (
+                <Chip
+                  key={limitation}
+                  label={limitation}
+                  onClick={() =>
+                    handleArrayToggle('functional_limitations_adl', limitation)
+                  }
+                  color={
+                    formData.functional_limitations_adl.includes(limitation)
+                      ? 'primary'
+                      : 'default'
+                  }
+                  variant="outlined"
+                  size="small"
+                />
+              ))}
             </Box>
-            <Collapse in={showRemarks.assessmentPlan}>
+            <Collapse in={showRemarks.functionalLimitations}>
               <TextField
                 fullWidth
-                label="Assessment Plan Remark"
-                value={formData.clinical_impression_remark}
+                label="Functional Limitations Remark"
+                value={formData.functional_limitations_adl_remark}
                 onChange={(e) =>
                   handleInputChange(
-                    'clinical_impression_remark',
+                    'functional_limitations_adl_remark',
                     e.target.value,
                   )
                 }
@@ -1302,7 +1360,89 @@ const AddAnkle = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
               />
             </Collapse>
           </Grid>
+        </Grid>
 
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 1,
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+              Clinical Impressions
+            </Typography>
+            <Button
+              startIcon={<AddIcon />}
+              onClick={() => toggleRemark('clinicalImpression')}
+              size="small"
+              variant="outlined"
+            >
+              Other
+            </Button>
+          </Box>
+          <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
+            Mechanical deficits/Impairments found on examination
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+            {clinicalImpressionOptions.map((impression) => (
+              <Chip
+                key={impression}
+                label={impression}
+                onClick={() =>
+                  handleArrayToggle('clinical_impression', impression)
+                }
+                color={
+                  formData.clinical_impression.includes(impression)
+                    ? 'primary'
+                    : 'default'
+                }
+                variant={
+                  formData.clinical_impression.includes(impression)
+                    ? 'filled'
+                    : 'outlined'
+                }
+                size="small"
+              />
+            ))}
+          </Box>
+          <Collapse in={showRemarks.clinicalImpression}>
+            <TextField
+              fullWidth
+              label="Clinical Impression Remark"
+              value={formData.clinical_impression_remark}
+              onChange={(e) =>
+                handleInputChange('clinical_impression_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              placeholder="Specify other clinical impressions..."
+            />
+          </Collapse>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+        <Typography variant="h5" sx={{ mb: 2 }} gutterBottom>
+          Medical Diagnosis
+        </Typography>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Medical Diagnosis"
+            value={formData.medical_diagnosis}
+            onChange={(e) =>
+              handleInputChange('medical_diagnosis', e.target.value)
+            }
+            multiline
+            rows={2}
+            required
+          />
+        </Grid>
+        <Divider sx={{ my: 3 }} />
+        {/* Assessment & Plan */}
+        <Grid container spacing={2}>
           <Grid item xs={12}>
             <Box
               sx={{
@@ -1312,7 +1452,7 @@ const AddAnkle = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
                 mb: 1,
               }}
             >
-              <Typography variant="subtitle2">Treatment Plan</Typography>
+              <Typography variant="subtitle1">Treatment Plan</Typography>
               <Button
                 startIcon={<AddIcon />}
                 onClick={() => toggleRemark('treatmentPlan')}

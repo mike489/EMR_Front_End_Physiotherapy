@@ -1,22 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { Box, CircularProgress, Typography } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  Pagination,
+  Select,
+  MenuItem,
+  FormControl,
+  Typography,
+} from "@mui/material";
 import PageContainer from "ui-component/MainPage";
 import MyReferralsTable from "./components/MyReferralsTable";
+import ReferralDetails from "./components/ReferralDetails";
 import Backend from "services/backend";
 import GetToken from "utils/auth-token";
 import { toast, ToastContainer } from "react-toastify";
-import Fallbacks from 'utils/components/Fallbacks';
+import Fallbacks from "utils/components/Fallbacks";
 
 export default function MyReferrals() {
   const [referrals, setReferrals] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedReferral, setSelectedReferral] = useState(null);
+  const [perPage, setPerPage] = useState(10);
+
+  const [pagination, setPagination] = useState({
+    page: 1,
+    perPage: 10,
+    total: 0,
+    lastPage: 1,
+  });
 
   // --------------------------
-  // Fetch My Referrals
+  // Fetch Referrals with Pagination
   // --------------------------
-  const fetchMyReferrals = async () => {
+  const fetchMyReferrals = async (page = 1, perPage = 10) => {
     const token = await GetToken();
-    const Api = `${Backend.auth}${Backend.myReferrals}`;
+    const Api = `${Backend.auth}${Backend.myReferrals}?page=${page}&per_page=${perPage}`;
+
     const headers = {
       Authorization: `Bearer ${token}`,
       accept: "application/json",
@@ -28,25 +47,32 @@ export default function MyReferrals() {
       const data = await res.json();
 
       if (data.success) {
-        setReferrals(data.data?.data || data.data || []);
+        setReferrals(data.data?.data || []);
+        setPagination({
+          page: data.data?.current_page || 1,
+          perPage: data.data?.per_page || perPage,
+          total: data.data?.total || 0,
+          lastPage: data.data?.last_page || 1,
+        });
       } else {
         toast.warning(data.message || "Failed to fetch referrals");
       }
     } catch (err) {
-      toast.error(err.message || "Error fetching referrals");
+      toast.error(err.message || "Network error");
     } finally {
       setLoading(false);
     }
   };
 
+  // Initial load + perPage change
   useEffect(() => {
-    fetchMyReferrals();
-  }, []);
+    fetchMyReferrals(1, perPage);
+  }, [perPage]);
 
   // --------------------------
-  // Loading Spinner
+  // Loading
   // --------------------------
-  if (loading) {
+  if (loading && referrals.length === 0) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
         <CircularProgress />
@@ -60,24 +86,80 @@ export default function MyReferrals() {
   if (!referrals.length) {
     return (
       <PageContainer title="My Referrals" maxWidth="lg">
-
-        <Fallbacks
-          severity="evaluation"
-          title="No Referral Found"
-          description="Referrals will appear here once available."
-          sx={{ paddingTop: 6 }}
+        <Box sx={{ py: 6, textAlign: "center" }}>
+          <Fallbacks
+            severity="evaluation"
+            title="No Referral Found"
+            description="Referrals will appear here once available."
+          />
+        </Box>
+        <ReferralDetails
+          referral={selectedReferral}
+          open={!!selectedReferral}
+          onClose={() => setSelectedReferral(null)}
         />
+        <ToastContainer />
       </PageContainer>
     );
   }
 
   // --------------------------
-  // Render Page
+  // Main Render
   // --------------------------
   return (
     <PageContainer title="My Referrals" maxWidth="lg">
-      <MyReferralsTable referrals={referrals} onView={(r) => console.log("Referral:", r)} />
-        <ToastContainer/>
+      <MyReferralsTable referrals={referrals} onView={setSelectedReferral} />
+
+      {/* ---------- Custom Pagination ---------- */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mt: 2,
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
+        {/* Rows per page */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography variant="body2">Rows per page:</Typography>
+          <FormControl size="small" sx={{ minWidth: 70 }}>
+            <Select
+              value={perPage}
+              onChange={(e) => {
+                const newPerPage = e.target.value;
+                setPerPage(newPerPage);
+                // Page resets via useEffect
+              }}
+            >
+              {[5, 10, 20, 50].map((num) => (
+                <MenuItem key={num} value={num}>
+                  {num}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+
+        {/* Page numbers */}
+        <Pagination
+          count={pagination.lastPage}
+          page={pagination.page}
+          onChange={(e, value) => fetchMyReferrals(value, perPage)}
+          color="primary"
+          shape="rounded"
+          showFirstButton
+          showLastButton
+        />
+      </Box>
+
+      <ReferralDetails
+        referral={selectedReferral}
+        open={!!selectedReferral}
+        onClose={() => setSelectedReferral(null)}
+      />
+      <ToastContainer />
     </PageContainer>
   );
 }

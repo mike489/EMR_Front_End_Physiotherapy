@@ -33,7 +33,7 @@ const PaymentList = ({ patient }) => {
 
   const handleFetchingPayments = async () => {
     const token = await GetToken();
-    const Api = `${Backend.auth}${Backend.patientCards}/${patient.id}`;
+    const Api = `${Backend.auth}${Backend.patientPayments}/${patient.id}`;
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',

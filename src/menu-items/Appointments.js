@@ -69,7 +69,7 @@ export const Appointments = () => {
     read_lens_type: {
       id: 'Website-Requests',
       title: 'Website Requests',
-      url: '/patientapp',
+      url: '/website_requests',
       icon: icons.IconWorldWww,
     },
     read_lens_material: {
@@ -79,9 +79,15 @@ export const Appointments = () => {
       icon: icons.IconWorldWww,
     },
     read_payment_setting: {
-      id: 'Emergencies ',
-      title: 'Emergencies ',
-      url: '/emergencies ',
+      id: 'Emergencies',
+      title: 'Emergencies',
+      url: '/emergencies',
+      icon: icons.IconWorldWww,
+    },
+    read_radiology_department: {
+      id: 'Vip ',
+      title: 'VIP ',
+      url: '/vip',
       icon: icons.IconWorldWww,
     },
   };

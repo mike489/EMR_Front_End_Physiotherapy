@@ -55,25 +55,39 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
     functional_limitations_adl_remark: '',
 
     // Lumbar-specific fields
-    range_of_motion: {
-      flexion: { left: '', right: '' },
-      extension: { left: '', right: '' },
-      lateral_flexion: { left: '', right: '' },
-      rotation: { left: '', right: '' },
-    },
-
-    // Neurological assessment
-    neurological_assessment: [],
-    neurological_assessment_remark: '',
+    range_of_motion_forward_bend: '',
+    range_of_motion_backward_bend: '',
+    range_of_motion_side_bend_left: '',
+    range_of_motion_side_bend_right: '',
+    range_of_motion_remark: '',
 
     // Special tests
-    special_tests: [],
+    special_tests_slr_right: '',
+    special_tests_slr_left: '',
+    special_tests_slump_right: '',
+    special_tests_slump_left: '',
+    special_tests_femoral_right: '',
+    special_tests_femoral_left: '',
+    special_tests_faber_right: '',
+    special_tests_faber_left: '',
+    special_tests_schober_right: '',
+    special_tests_schober_left: '',
     special_tests_remark: '',
 
     // Posture and biomechanical
     posture_assessment: [],
     posture_assessment_remark: '',
-    biomechanical: [],
+
+    // Remove the old biomechanical array and replace with individual fields:
+    // biomechanical: [], // Remove this line
+    // biomechanical_remark: '', // Remove this line
+
+    // Add the new biomechanical fields:
+    biomechanical_normal_mobility: false,
+    biomechanical_stiff_throughout: false,
+    biomechanical_restricted_right_rotation: false,
+    biomechanical_restricted_left_rotation: false,
+    biomechanical_hypermobility_noted: '',
     biomechanical_remark: '',
 
     // Palpation
@@ -88,7 +102,7 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
     circumference_measurements: [],
     circumference_measurements_remark: '',
 
-    // Observation
+    // Observation - make sure this is properly defined
     observation: [],
     observation_remark: '',
 
@@ -99,6 +113,45 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
     treatment_plans_remark: '',
     short_term_goal: '',
     precautions_and_contraindications: '',
+
+    // Strength assessment fields
+    strength_hip_adduction_right: '',
+    strength_hip_adduction_left: '',
+    strength_knee_flexion_right: '',
+    strength_knee_flexion_left: '',
+    strength_hip_extension_right: '',
+    strength_hip_extension_left: '',
+    strength_hip_flexion_right: '',
+    strength_hip_flexion_left: '',
+    strength_hip_abduction_right: '',
+    strength_hip_abduction_left: '',
+    strength_remark: '',
+
+    // Pelvic biomechanical fields (NEW)
+    biomechanical_pelvic_normal_si_mobility: false,
+    biomechanical_pelvic_si_dysfunction: false,
+    biomechanical_pelvic_symphysis_dysfunction: false,
+    biomechanical_pelvic_superior_shear_hypermobility: false,
+    biomechanical_pelvic_restricted_hip_internal_rotation: false,
+    biomechanical_pelvic_remark: '',
+
+    // Lower extremity flexibility fields (NEW)
+    flexibility_gastro_soleus_right: '',
+    flexibility_gastro_soleus_left: '',
+    flexibility_quadriceps_right: '',
+    flexibility_quadriceps_left: '',
+    flexibility_illacus_psoas_right: '',
+    flexibility_illacus_psoas_left: '',
+    flexibility_hamstrings_right: '',
+    flexibility_hamstrings_left: '',
+    flexibility_gluteus_max_right: '',
+    flexibility_gluteus_max_left: '',
+    flexibility_piriformis_right: '',
+    flexibility_piriformis_left: '',
+    flexibility_hip_adductors_right: '',
+    flexibility_hip_adductors_left: '',
+
+    medical_diagnosis: '',
 
     visit_id: visit?.visit_id || '',
   });
@@ -223,6 +276,25 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
     'Muscle Weakness',
     'Movement Coordination Deficits',
     'Muscle Imbalance',
+    'Functional instability of lumbopelvic region',
+    'Lumbar spine dysfunction',
+    'Decreased lumbar spine active range of motion',
+    'Lumbar hypermobility',
+    'Facet joint hypomobility lumbar/thoracic spine',
+    'S-I dysfunction with possible hypermobility/with pubic joint involvement',
+    'Sensitivity thoracic and lumbar vertebrae to p-a oscillations',
+    'Roto scoliosis',
+    'Hip capsule restriction',
+    'Hip flexor muscle dysfunction',
+    'Soft tissue dysfunction of pelvic girdle musculature and erector spine',
+    'Hypertonic musculature',
+    'Decreased lower extremity muscle lengths',
+    'Lower extremity muscle weakness',
+    'Adverse neural tension signs right/left sciatic and right/left femoral tract bilaterally',
+    'Gait dysfunction',
+    'Long quadrant',
+    'Altered mechanics superior tib/fib joint/ Altered mechanics ankle joint',
+    'Generalized physical deconditioning',
   ];
 
   const neurologicalOptions = [
@@ -271,14 +343,6 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
     'Severely Tender',
   ];
 
-  // Lumbar-specific ROM tests
-  const romTests = [
-    { key: 'flexion', label: 'Flexion', normal: '40-60°' },
-    { key: 'extension', label: 'Extension', normal: '20-35°' },
-    { key: 'lateral_flexion', label: 'Lateral Flexion', normal: '15-20°' },
-    { key: 'rotation', label: 'Rotation', normal: '3-18°' },
-  ];
-
   // Lumbar-specific palpation tests
   const palpationTests = [
     { key: 'lumbar_paraspinals', label: 'Lumbar Paraspinals' },
@@ -307,19 +371,6 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
       ...prev,
       special_tests: { ...prev.special_tests, [testName]: result },
     }));
-
-  const handleRomChange = (testKey, side, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      range_of_motion: {
-        ...prev.range_of_motion,
-        [testKey]: {
-          ...prev.range_of_motion[testKey],
-          [side]: value,
-        },
-      },
-    }));
-  };
 
   const handlePalpationChange = (testKey, value) => {
     const fieldName = `palpations_${testKey}`;
@@ -432,9 +483,7 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
             />
           </Grid>
         </Grid>
-
         <Divider sx={{ my: 3 }} />
-
         <Grid item xs={12}>
           <Box
             sx={{
@@ -654,9 +703,1184 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
             />
           </Grid>
         </Grid>
+        <Divider sx={{ my: 2 }} />
+
+        {/* Observations Section */}
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 1,
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ mt: 2 }}>
+              Observations
+            </Typography>
+            <Button
+              startIcon={<AddIcon />}
+              onClick={() => toggleRemark('observations')}
+              size="small"
+              variant="outlined"
+            >
+              Other
+            </Button>
+          </Box>
+          <FormGroup row>
+            {[
+              'Swelling Present',
+              'Muscle Spasm',
+              'Deformity Present',
+              'Muscle Atrophy',
+              'Skin Changes',
+              'Ecchymosis',
+            ].map((label) => (
+              <FormControlLabel
+                key={label}
+                control={
+                  <Checkbox
+                    checked={(formData.observation || []).includes(label)}
+                    onChange={() => handleArrayToggle('observation', label)}
+                  />
+                }
+                label={label}
+              />
+            ))}
+          </FormGroup>
+          <Collapse in={showRemarks.observations}>
+            <TextField
+              fullWidth
+              label="Observation Remark"
+              value={formData.observation_remark || ''}
+              onChange={(e) =>
+                handleInputChange('observation_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              sx={{ mt: 1 }}
+            />
+          </Collapse>
+        </Grid>
+
+        {/* ROM Assessment */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+            ROM Lumbar
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                    Measurement
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '50%' }}>
+                    <Box>
+                      <Typography variant="body2">Forward Bend</Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        (N=60°)
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.range_of_motion_forward_bend || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'range_of_motion_forward_bend',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Box>
+                      <Typography variant="body2">Backward Bend</Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        (N=25°)
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.range_of_motion_backward_bend || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'range_of_motion_backward_bend',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Box>
+                      <Typography variant="body2">Side bend (L)</Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        (N=25°)
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.range_of_motion_side_bend_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'range_of_motion_side_bend_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Box>
+                      <Typography variant="body2">Side bend (R)</Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        (N=25°)
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.range_of_motion_side_bend_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'range_of_motion_side_bend_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={2}>
+                    <TextField
+                      fullWidth
+                      label="Remark"
+                      value={formData.range_of_motion_remark || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'range_of_motion_remark',
+                          e.target.value,
+                        )
+                      }
+                      size="small"
+                      multiline
+                      rows={2}
+                      placeholder="Additional notes on range of motion..."
+                    />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
 
         <Divider sx={{ my: 3 }} />
+        {/* Palpation Assessment */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
+            Palpation
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
+            These structures presented tender
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableBody>
+                {palpationTests.map((test) => (
+                  <TableRow key={test.key}>
+                    <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                      <Typography variant="body2">{test.label}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData[`palpations_${test.key}`] || ''}
+                          onChange={(e) =>
+                            handlePalpationChange(test.key, e.target.value)
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {tendernessOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TextField
+            fullWidth
+            label="Remark"
+            value={formData.palpations_remark}
+            onChange={(e) =>
+              handleInputChange('palpations_remark', e.target.value)
+            }
+            size="small"
+            sx={{ mt: 1 }}
+            multiline
+            rows={2}
+          />
+        </Grid>
+        <Divider sx={{ my: 3 }} />
+        {/* Physical Examination */}
+        <Typography variant="h5" gutterBottom>
+          Physical Examination
+        </Typography>
+        <Grid item xs={12}>
+          <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
+            Strength Assessment
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Strength</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                    Right
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                    Left
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    Hip adduction
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      value={formData.strength_hip_adduction_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'strength_hip_adduction_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Grade"
+                      sx={{ width: 80 }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      value={formData.strength_hip_adduction_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'strength_hip_adduction_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Grade"
+                      sx={{ width: 80 }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    Knee flexion
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      value={formData.strength_knee_flexion_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'strength_knee_flexion_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Grade"
+                      sx={{ width: 80 }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      value={formData.strength_knee_flexion_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'strength_knee_flexion_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Grade"
+                      sx={{ width: 80 }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    Hip Extension
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      value={formData.strength_hip_extension_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'strength_hip_extension_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Grade"
+                      sx={{ width: 80 }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      value={formData.strength_hip_extension_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'strength_hip_extension_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Grade"
+                      sx={{ width: 80 }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    Hip Flexion
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      value={formData.strength_hip_flexion_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'strength_hip_flexion_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Grade"
+                      sx={{ width: 80 }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      value={formData.strength_hip_flexion_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'strength_hip_flexion_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Grade"
+                      sx={{ width: 80 }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    Hip Abduction
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      value={formData.strength_hip_abduction_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'strength_hip_abduction_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Grade"
+                      sx={{ width: 80 }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      value={formData.strength_hip_abduction_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'strength_hip_abduction_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Grade"
+                      sx={{ width: 80 }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={3}>
+                    <TextField
+                      fullWidth
+                      label="Remark"
+                      value={formData.strength_remark || ''}
+                      onChange={(e) =>
+                        handleInputChange('strength_remark', e.target.value)
+                      }
+                      size="small"
+                      multiline
+                      rows={2}
+                      placeholder="Additional notes on strength assessment..."
+                    />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
 
+        {/* Biomechanical Assessment */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
+            Biomechanical Lumbar Spine
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableBody>
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                    <Typography variant="body2">Normal mobility</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
+                            formData.biomechanical_normal_mobility || false
+                          }
+                          onChange={(e) =>
+                            handleInputChange(
+                              'biomechanical_normal_mobility',
+                              e.target.checked,
+                            )
+                          }
+                        />
+                      }
+                      label=""
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">Stiff throughout</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
+                            formData.biomechanical_stiff_throughout || false
+                          }
+                          onChange={(e) =>
+                            handleInputChange(
+                              'biomechanical_stiff_throughout',
+                              e.target.checked,
+                            )
+                          }
+                        />
+                      }
+                      label=""
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">
+                      Restricted right rotation
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
+                            formData.biomechanical_restricted_right_rotation ||
+                            false
+                          }
+                          onChange={(e) =>
+                            handleInputChange(
+                              'biomechanical_restricted_right_rotation',
+                              e.target.checked,
+                            )
+                          }
+                        />
+                      }
+                      label=""
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">
+                      Restricted left rotation
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
+                            formData.biomechanical_restricted_left_rotation ||
+                            false
+                          }
+                          onChange={(e) =>
+                            handleInputChange(
+                              'biomechanical_restricted_left_rotation',
+                              e.target.checked,
+                            )
+                          }
+                        />
+                      }
+                      label=""
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">
+                      Hypermobility noted in the:
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      value={formData.biomechanical_hypermobility_noted || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'biomechanical_hypermobility_noted',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Specify location of hypermobility..."
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={2}>
+                    <TextField
+                      fullWidth
+                      label="Remark"
+                      value={formData.biomechanical_remark || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'biomechanical_remark',
+                          e.target.value,
+                        )
+                      }
+                      size="small"
+                      multiline
+                      rows={2}
+                      placeholder="Additional notes on biomechanical assessment..."
+                    />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+
+        {/* Biomechanical Pelvic Joints */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+            Biomechanical Pelvic Joints
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableBody>
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                    <Typography variant="body2">Normal S-I mobility</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
+                            formData.biomechanical_pelvic_normal_si_mobility ||
+                            false
+                          }
+                          onChange={(e) =>
+                            handleInputChange(
+                              'biomechanical_pelvic_normal_si_mobility',
+                              e.target.checked,
+                            )
+                          }
+                        />
+                      }
+                      label=""
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">S-I dysfunction</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
+                            formData.biomechanical_pelvic_si_dysfunction ||
+                            false
+                          }
+                          onChange={(e) =>
+                            handleInputChange(
+                              'biomechanical_pelvic_si_dysfunction',
+                              e.target.checked,
+                            )
+                          }
+                        />
+                      }
+                      label=""
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">
+                      Public symphysis dysfunction
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
+                            formData.biomechanical_pelvic_symphysis_dysfunction ||
+                            false
+                          }
+                          onChange={(e) =>
+                            handleInputChange(
+                              'biomechanical_pelvic_symphysis_dysfunction',
+                              e.target.checked,
+                            )
+                          }
+                        />
+                      }
+                      label=""
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">
+                      Superior shear hypermobility
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
+                            formData.biomechanical_pelvic_superior_shear_hypermobility ||
+                            false
+                          }
+                          onChange={(e) =>
+                            handleInputChange(
+                              'biomechanical_pelvic_superior_shear_hypermobility',
+                              e.target.checked,
+                            )
+                          }
+                        />
+                      }
+                      label=""
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">
+                      Restricted hip internal rotation
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={
+                            formData.biomechanical_pelvic_restricted_hip_internal_rotation ||
+                            false
+                          }
+                          onChange={(e) =>
+                            handleInputChange(
+                              'biomechanical_pelvic_restricted_hip_internal_rotation',
+                              e.target.checked,
+                            )
+                          }
+                        />
+                      }
+                      label=""
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={2}>
+                    <TextField
+                      fullWidth
+                      label="Remark"
+                      value={formData.biomechanical_pelvic_remark || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'biomechanical_pelvic_remark',
+                          e.target.value,
+                        )
+                      }
+                      size="small"
+                      multiline
+                      rows={2}
+                      placeholder="Additional notes on pelvic joint biomechanics..."
+                    />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+
+        {/* Lower Extremity Flexibility Muscles */}
+        {/* Lower Extremity Flexibility Muscles */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
+            Lower Extremity Flexibility Muscles - Restricted by
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold', width: '40%' }}>
+                    Muscle Group
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{ fontWeight: 'bold', width: '30%' }}
+                  >
+                    Right
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{ fontWeight: 'bold', width: '30%' }}
+                  >
+                    Left
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">Gastro/soleus</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_gastro_soleus_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_gastro_soleus_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_gastro_soleus_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_gastro_soleus_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">Quadriceps</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_quadriceps_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_quadriceps_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_quadriceps_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_quadriceps_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">Illacus/psoas</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_illacus_psoas_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_illacus_psoas_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_illacus_psoas_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_illacus_psoas_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">Hamstrings</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_hamstrings_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_hamstrings_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_hamstrings_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_hamstrings_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">Gluteus max</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_gluteus_max_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_gluteus_max_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_gluteus_max_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_gluteus_max_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">Piriformis</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_piriformis_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_piriformis_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_piriformis_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_piriformis_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component="th" scope="row">
+                    <Typography variant="body2">Hip adductors</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_hip_adductors_right || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_hip_adductors_right',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      size="medium"
+                      type="number"
+                      value={formData.flexibility_hip_adductors_left || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'flexibility_hip_adductors_left',
+                          e.target.value,
+                        )
+                      }
+                      placeholder="°"
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ ml: 0.5 }}>
+                            °
+                          </Typography>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
         {/* Functional Status */}
         <Typography variant="h5" gutterBottom>
           Functional Status
@@ -721,481 +1945,25 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Physical Examination */}
-        <Typography variant="h5" gutterBottom>
-          Physical Examination
+        <Typography variant="h5" sx={{ mb: 2 }} gutterBottom>
+          Medical Diagnosis
         </Typography>
-        <Grid container spacing={2}>
-          {/* ROM Assessment */}
-          <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Range of Motion
-            </Typography>
-            <TableContainer component={Paper} variant="outlined">
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell></TableCell>
-                    <TableCell align="center">Right</TableCell>
-                    <TableCell align="center">Left</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {romTests.map((test) => (
-                    <TableRow key={test.key}>
-                      <TableCell component="th" scope="row">
-                        <Box>
-                          <Typography variant="body2">{test.label}</Typography>
-                          <Typography variant="caption" color="textSecondary">
-                            (N={test.normal})
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center">
-                        <TextField
-                          size="medium"
-                          type="number"
-                          value={
-                            formData.range_of_motion[test.key]?.right || ''
-                          }
-                          onChange={(e) =>
-                            handleRomChange(test.key, 'right', e.target.value)
-                          }
-                          placeholder="°"
-                          sx={{ width: 120 }}
-                          InputProps={{
-                            endAdornment: (
-                              <Typography variant="body2" sx={{ ml: 0.5 }}>
-                                °
-                              </Typography>
-                            ),
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <TextField
-                          size="medium"
-                          type="number"
-                          value={formData.range_of_motion[test.key]?.left || ''}
-                          onChange={(e) =>
-                            handleRomChange(test.key, 'left', e.target.value)
-                          }
-                          placeholder="°"
-                          sx={{ width: 120 }}
-                          InputProps={{
-                            endAdornment: (
-                              <Typography variant="body2" sx={{ ml: 0.5 }}>
-                                °
-                              </Typography>
-                            ),
-                          }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Grid>
-
-          {/* Neurological Assessment */}
-          <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Neurological Assessment
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {neurologicalOptions.map((neuro) => (
-                <Chip
-                  key={neuro}
-                  label={neuro}
-                  onClick={() =>
-                    handleArrayToggle('neurological_assessment', neuro)
-                  }
-                  color={
-                    formData.neurological_assessment.includes(neuro)
-                      ? 'primary'
-                      : 'default'
-                  }
-                  variant={
-                    formData.neurological_assessment.includes(neuro)
-                      ? 'filled'
-                      : 'outlined'
-                  }
-                  size="small"
-                />
-              ))}
-            </Box>
-            <TextField
-              fullWidth
-              label="Neurological Assessment Remark"
-              value={formData.neurological_assessment_remark}
-              onChange={(e) =>
-                handleInputChange(
-                  'neurological_assessment_remark',
-                  e.target.value,
-                )
-              }
-              multiline
-              rows={2}
-            />
-          </Grid>
-
-          {/* Muscle Flexibility */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Muscle Flexibility
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {muscleFlexibilityOptions.map((muscle) => (
-                <Chip
-                  key={muscle}
-                  label={muscle}
-                  onClick={() =>
-                    handleArrayToggle('muscle_flexibility', muscle)
-                  }
-                  color={
-                    formData.muscle_flexibility.includes(muscle)
-                      ? 'primary'
-                      : 'default'
-                  }
-                  variant={
-                    formData.muscle_flexibility.includes(muscle)
-                      ? 'filled'
-                      : 'outlined'
-                  }
-                  size="small"
-                />
-              ))}
-            </Box>
-            <TextField
-              fullWidth
-              label="Muscle Flexibility Remark"
-              value={formData.muscle_flexibility_remark}
-              onChange={(e) =>
-                handleInputChange('muscle_flexibility_remark', e.target.value)
-              }
-              multiline
-              rows={2}
-            />
-          </Grid>
-
-          {/* Circumference Measurements */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Circumference Measurements
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {circumferenceOptions.map((measurement) => (
-                <Chip
-                  key={measurement}
-                  label={measurement}
-                  onClick={() =>
-                    handleArrayToggle('circumference_measurements', measurement)
-                  }
-                  color={
-                    formData.circumference_measurements.includes(measurement)
-                      ? 'primary'
-                      : 'default'
-                  }
-                  variant={
-                    formData.circumference_measurements.includes(measurement)
-                      ? 'filled'
-                      : 'outlined'
-                  }
-                  size="small"
-                />
-              ))}
-            </Box>
-            <TextField
-              fullWidth
-              label="Circumference Measurements Remark"
-              value={formData.circumference_measurements_remark}
-              onChange={(e) =>
-                handleInputChange(
-                  'circumference_measurements_remark',
-                  e.target.value,
-                )
-              }
-              multiline
-              rows={2}
-            />
-          </Grid>
-
-          {/* Palpation Assessment */}
-          <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Palpation
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-              These structures presented tender
-            </Typography>
-            <TableContainer component={Paper} variant="outlined">
-              <Table size="small">
-                <TableBody>
-                  {palpationTests.map((test) => (
-                    <TableRow key={test.key}>
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        sx={{ width: '40%' }}
-                      >
-                        <Typography variant="body2">{test.label}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <FormControl size="small" fullWidth>
-                          <Select
-                            value={formData[`palpations_${test.key}`] || ''}
-                            onChange={(e) =>
-                              handlePalpationChange(test.key, e.target.value)
-                            }
-                            displayEmpty
-                          >
-                            <MenuItem value="">
-                              <em>-Select-</em>
-                            </MenuItem>
-                            {tendernessOptions.map((option) => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TextField
-              fullWidth
-              label="Remark"
-              value={formData.palpations_remark}
-              onChange={(e) =>
-                handleInputChange('palpations_remark', e.target.value)
-              }
-              size="small"
-              sx={{ mt: 1 }}
-              multiline
-              rows={2}
-            />
-          </Grid>
-
-          {/* Posture Assessment */}
-          <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Posture Assessment
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {postureOptions.map((posture) => (
-                <Chip
-                  key={posture}
-                  label={posture}
-                  onClick={() =>
-                    handleArrayToggle('posture_assessment', posture)
-                  }
-                  color={
-                    formData.posture_assessment.includes(posture)
-                      ? 'primary'
-                      : 'default'
-                  }
-                  variant={
-                    formData.posture_assessment.includes(posture)
-                      ? 'filled'
-                      : 'outlined'
-                  }
-                  size="small"
-                />
-              ))}
-            </Box>
-            <TextField
-              fullWidth
-              label="Posture Assessment Remark"
-              value={formData.posture_assessment_remark}
-              onChange={(e) =>
-                handleInputChange('posture_assessment_remark', e.target.value)
-              }
-              multiline
-              rows={2}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
-              }}
-            >
-              <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-                Clinical Impressions
-              </Typography>
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() => toggleRemark('clinicalImpression')}
-                size="small"
-                variant="outlined"
-              >
-                Other
-              </Button>
-            </Box>
-            <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-              Mechanical deficits/Impairments found on examination
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {clinicalImpressionOptions.map((impression) => (
-                <Chip
-                  key={impression}
-                  label={impression}
-                  onClick={() =>
-                    handleArrayToggle('clinical_impression', impression)
-                  }
-                  color={
-                    formData.clinical_impression.includes(impression)
-                      ? 'primary'
-                      : 'default'
-                  }
-                  variant={
-                    formData.clinical_impression.includes(impression)
-                      ? 'filled'
-                      : 'outlined'
-                  }
-                  size="small"
-                />
-              ))}
-            </Box>
-            <Collapse in={showRemarks.clinicalImpression}>
-              <TextField
-                fullWidth
-                label="Clinical Impression Remark"
-                value={formData.clinical_impression_remark}
-                onChange={(e) =>
-                  handleInputChange(
-                    'clinical_impression_remark',
-                    e.target.value,
-                  )
-                }
-                multiline
-                rows={2}
-                placeholder="Specify other clinical impressions..."
-              />
-            </Collapse>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 2 }}>
-              Special Tests
-            </Typography>
-            <Grid container spacing={1}>
-              {specialTests.map((test) => (
-                <Grid item xs={12} sm={6} key={test.name}>
-                  <Box
-                    sx={{
-                      border: 1,
-                      borderColor: 'divider',
-                      p: 1,
-                      borderRadius: 1,
-                    }}
-                  >
-                    <Box
-                      sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}
-                    >
-                      <Typography variant="body2" sx={{ flexGrow: 1 }}>
-                        {test.name}
-                      </Typography>
-                      <Tooltip title={test.description}>
-                        <IconButton size="small">
-                          <InfoIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                    <RadioGroup
-                      row
-                      value={formData.special_tests[test.name] || ''}
-                      onChange={(e) =>
-                        handleSpecialTestResult(test.name, e.target.value)
-                      }
-                    >
-                      {['Positive', 'Negative', 'Not Tested'].map((opt) => (
-                        <FormControlLabel
-                          key={opt}
-                          value={opt}
-                          control={<Radio size="small" />}
-                          label={opt}
-                        />
-                      ))}
-                    </RadioGroup>
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
-              }}
-            >
-              <Typography variant="subtitle2" sx={{ mt: 2 }}>
-                Observations
-              </Typography>
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() => toggleRemark('observations')}
-                size="small"
-                variant="outlined"
-              >
-                Other
-              </Button>
-            </Box>
-            <FormGroup row>
-              {[
-                'Swelling Present',
-                'Muscle Spasm',
-                'Deformity Present',
-                'Muscle Atrophy',
-                'Skin Changes',
-                'Ecchymosis',
-              ].map((label) => (
-                <FormControlLabel
-                  key={label}
-                  control={
-                    <Checkbox
-                      checked={formData.observation.includes(label)}
-                      onChange={() => handleArrayToggle('observation', label)}
-                    />
-                  }
-                  label={label}
-                />
-              ))}
-            </FormGroup>
-            <Collapse in={showRemarks.observation}>
-              <TextField
-                fullWidth
-                label="Observation Remark"
-                value={formData.observation_remark}
-                onChange={(e) =>
-                  handleInputChange('observation_remark', e.target.value)
-                }
-                multiline
-                rows={2}
-                sx={{ mt: 1 }}
-              />
-            </Collapse>
-          </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Medical Diagnosis"
+            value={formData.medical_diagnosis}
+            onChange={(e) =>
+              handleInputChange('medical_diagnosis', e.target.value)
+            }
+            multiline
+            rows={2}
+            required
+          />
         </Grid>
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Assessment & Plan */}
-        <Typography variant="h5" sx={{ mb: 2 }} gutterBottom>
-          Assessment & Plan
-        </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Box
@@ -1206,61 +1974,7 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
                 mb: 1,
               }}
             >
-              <Typography variant="subtitle2">Assessment Plan</Typography>
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() => toggleRemark('assessmentPlan')}
-                size="small"
-                variant="outlined"
-              >
-                Other
-              </Button>
-            </Box>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {AssessmentOptions.map((assessment) => {
-                const selected =
-                  formData.clinical_impression.includes(assessment);
-                return (
-                  <Chip
-                    key={assessment}
-                    label={assessment}
-                    onClick={() =>
-                      handleArrayToggle('clinical_impression', assessment)
-                    }
-                    color={selected ? 'primary' : 'default'}
-                    variant={selected ? 'filled' : 'outlined'}
-                    size="small"
-                  />
-                );
-              })}
-            </Box>
-            <Collapse in={showRemarks.assessmentPlan}>
-              <TextField
-                fullWidth
-                label="Assessment Plan Remark"
-                value={formData.clinical_impression_remark}
-                onChange={(e) =>
-                  handleInputChange(
-                    'clinical_impression_remark',
-                    e.target.value,
-                  )
-                }
-                multiline
-                rows={2}
-              />
-            </Collapse>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
-              }}
-            >
-              <Typography variant="subtitle2">Treatment Plan</Typography>
+              <Typography variant="subtitle1">Treatment Plan</Typography>
               <Button
                 startIcon={<AddIcon />}
                 onClick={() => toggleRemark('treatmentPlan')}
@@ -1309,20 +2023,6 @@ const AddLumbar = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
                 handleInputChange('short_term_goal', e.target.value)
               }
               placeholder="Reduce pain by 50%, Improve functional mobility, Restore ADL independence..."
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Precautions & Contraindications"
-              value={formData.precautions_and_contraindications}
-              onChange={(e) =>
-                handleInputChange(
-                  'precautions_and_contraindications',
-                  e.target.value,
-                )
-              }
-              placeholder="Avoid heavy lifting, No high-impact activities, Proper body mechanics..."
             />
           </Grid>
         </Grid>

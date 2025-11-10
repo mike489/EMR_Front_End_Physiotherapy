@@ -568,6 +568,8 @@ const InPatients = () => {
                       <TableRow>
                         <TableCell>Full Name</TableCell>
                         <TableCell>EMR Number</TableCell>
+                        <TableCell>Bed Number</TableCell>
+                        <TableCell>Ward</TableCell>
                         <TableCell>Phone</TableCell>
                         <TableCell>Gender</TableCell>
                         {/* <TableCell>Payment</TableCell> */}
@@ -605,6 +607,8 @@ const InPatients = () => {
                           </TableCell>
 
                           <TableCell>{patient.emr_number}</TableCell>
+                          <TableCell>{patient.bed_number}</TableCell>
+                          <TableCell>{patient.ward}</TableCell>
                           <TableCell>{patient.phone}</TableCell>
 
                           <TableCell>{patient.gender}</TableCell>

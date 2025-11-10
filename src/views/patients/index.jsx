@@ -577,14 +577,10 @@ const Patients = () => {
                       <TableRow>
                         <TableCell>Full Name</TableCell>
                         <TableCell>EMR Number</TableCell>
-                        {/* <TableCell>Email</TableCell> */}
                         <TableCell>Phone</TableCell>
-                        {/* <TableCell>Category</TableCell> */}
-                        {/* <TableCell>Date of Birth</TableCell> */}
                         <TableCell>Gender</TableCell>
                         <TableCell>Payment</TableCell>
                         <TableCell>Status</TableCell>
-                        {/* <TableCell>Assign </TableCell> */}
                         <TableCell>Actions</TableCell>
                       </TableRow>
                     </TableHead>
@@ -630,45 +626,10 @@ const Patients = () => {
                           </TableCell>
 
                           <TableCell>{patient.emr_number}</TableCell>
-                          {/* <TableCell>{patient.email || 'N/A'}</TableCell> */}
                           <TableCell>{patient.phone}</TableCell>
-                          {/* <TableCell>
-                            <Chip
-                              label={patient.patient_category}
-                              color={
-                                patient.patient_category === 'regular'
-                                  ? 'primary'
-                                  : 'secondary'
-                              }
-                            />
-                          </TableCell> */}
 
-                          {/* <TableCell>
-                            {format(
-                              new Date(patient.date_of_birth),
-                              'MM/dd/yyyy',
-                            )}
-                            </TableCell> */}
                           <TableCell>{patient.gender}</TableCell>
-                          {/* <TableCell>
-                            <Chip
-                              label={patient.is_card_expired ? 'Pay' : 'Paid'}
-                              color={patient.is_card_expired ? 'primary' : 'secondary'}
-                              onClick={() => handlePaymentClick(patient)}
-                              clickable={patient.is_card_expired}
-                              sx={{ cursor: patient.is_card_expired ? 'default' : 'pointer' }}
-                            />
-                          </TableCell> */}
-                          {/* <TableCell>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => handlePaymentClick(patient)}
-                              disabled={!patient.is_card_expired} // disable if already assigned
-                            >
-                              {patient.is_card_expired ? 'Pay' : 'Send'}
-                            </Button>
-                          </TableCell> */}
+
                           <TableCell>
                             {patient.is_card_expired ? (
                               <Button
@@ -685,6 +646,7 @@ const Patients = () => {
                                   'Pending',
                                   'In Progress',
                                   'No Visits',
+                                  'Finished',
                                 ].includes(patient?.visit_status) && (
                                   <Button
                                     variant="outlined"
@@ -695,7 +657,7 @@ const Patients = () => {
                                     }
                                     disabled={
                                       patient?.visit_status === 'In Progress'
-                                    } // only disabled
+                                    }
                                   >
                                     Assign
                                   </Button>

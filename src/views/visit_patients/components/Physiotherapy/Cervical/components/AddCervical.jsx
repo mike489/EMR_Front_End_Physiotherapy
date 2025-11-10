@@ -91,6 +91,7 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
     treatment_plans: [],
     treatment_plans_remark: '',
     short_term_goal: '',
+    medical_diagnosis: '',
     precautions_and_contraindications: '',
 
     visit_id: visit?.visit_id || '',
@@ -155,6 +156,22 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
   // Cervical-specific special tests
   const specialTests = [
     {
+      name: 'Cervical Compression',
+      description: 'Assesses for nerve root compression',
+    },
+    {
+      name: 'Cervical Distraction',
+      description: 'Relieves nerve root compression symptoms',
+    },
+    {
+      name: 'Cranial Nerve Test',
+      description: 'Assesses cranial nerve function',
+    },
+    {
+      name: 'Thoracic T123 Restricted rotation',
+      description: 'Assesses thoracic spine mobility',
+    },
+    {
       name: "Spurling's Test",
       description: 'Cervical radiculopathy assessment',
     },
@@ -201,6 +218,15 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
     'Ergonomic Education',
     'Pain Management',
     'Strengthening Program',
+  ];
+
+  const strengthOptions = [
+    '0/5 - No contraction',
+    '1/5 - Muscle flicker, but no movement',
+    '2/5 - Movement with gravity eliminated',
+    '3/5 - Movement against gravity only',
+    '4/5 - Movement against some resistance',
+    '5/5 - Normal strength',
   ];
 
   const clinicalImpressionOptions = [
@@ -632,15 +658,7 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
               placeholder="Arm, shoulder, scapula, head..."
             />
           </Grid>
-        </Grid>
 
-        <Divider sx={{ my: 3 }} />
-
-        {/* Functional Status */}
-        <Typography variant="h5" gutterBottom>
-          Functional Status
-        </Typography>
-        <Grid container spacing={2}>
           <Grid item xs={12}>
             <Box
               sx={{
@@ -650,64 +668,56 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
                 mb: 1,
               }}
             >
-              <Typography variant="subtitle2">
-                Functional Limitations
+              <Typography variant="subtitle2" sx={{ mt: 2 }}>
+                Observations
               </Typography>
               <Button
                 startIcon={<AddIcon />}
-                onClick={() => toggleRemark('functionalLimitations')}
+                onClick={() => toggleRemark('observations')}
                 size="small"
                 variant="outlined"
               >
                 Other
               </Button>
             </Box>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {functionalLimitations.map((limitation) => (
-                <Chip
-                  key={limitation}
-                  label={limitation}
-                  onClick={() =>
-                    handleArrayToggle('functional_limitations_adl', limitation)
+            <FormGroup row>
+              {[
+                'Swelling Present',
+                'Muscle Spasm',
+                'Deformity Present',
+                'Muscle Atrophy',
+                'Skin Changes',
+              ].map((label) => (
+                <FormControlLabel
+                  key={label}
+                  control={
+                    <Checkbox
+                      checked={formData.observation.includes(label)}
+                      onChange={() => handleArrayToggle('observation', label)}
+                    />
                   }
-                  color={
-                    formData.functional_limitations_adl.includes(limitation)
-                      ? 'primary'
-                      : 'default'
-                  }
-                  variant="outlined"
-                  size="small"
+                  label={label}
                 />
               ))}
-            </Box>
-            <Collapse in={showRemarks.functionalLimitations}>
+            </FormGroup>
+            <Collapse in={showRemarks.observation}>
               <TextField
                 fullWidth
-                label="Functional Limitations Remark"
-                value={formData.functional_limitations_adl_remark}
+                label="Observation Remark"
+                value={formData.observation_remark}
                 onChange={(e) =>
-                  handleInputChange(
-                    'functional_limitations_adl_remark',
-                    e.target.value,
-                  )
+                  handleInputChange('observation_remark', e.target.value)
                 }
                 multiline
                 rows={2}
+                sx={{ mt: 1 }}
               />
             </Collapse>
           </Grid>
-        </Grid>
 
-        <Divider sx={{ my: 3 }} />
-
-        {/* Physical Examination */}
-        <Typography variant="h5" gutterBottom>
-          Physical Examination
-        </Typography>
-        <Grid container spacing={2}>
           {/* ROM Assessment */}
           <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
+            <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
               Range of Motion
             </Typography>
             <TableContainer component={Paper} variant="outlined">
@@ -777,65 +787,6 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
             </TableContainer>
           </Grid>
 
-          {/* Neurological Assessment */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Myotome Testing
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {myotomeOptions.map((myotome) => (
-                <Chip
-                  key={myotome}
-                  label={myotome}
-                  onClick={() => handleArrayToggle('myotome', myotome)}
-                  color={
-                    formData.myotome.includes(myotome) ? 'primary' : 'default'
-                  }
-                  variant={
-                    formData.myotome.includes(myotome) ? 'filled' : 'outlined'
-                  }
-                  size="small"
-                />
-              ))}
-            </Box>
-            <TextField
-              fullWidth
-              label="Myotome Remark"
-              value={formData.myotome_remark}
-              onChange={(e) =>
-                handleInputChange('myotome_remark', e.target.value)
-              }
-              multiline
-              rows={2}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Reflex Testing
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {reflexOptions.map((reflex) => (
-                <Chip
-                  key={reflex}
-                  label={reflex}
-                  onClick={() => handleArrayToggle('reflex_testing', reflex)}
-                  color={
-                    formData.reflex_testing.includes(reflex)
-                      ? 'primary'
-                      : 'default'
-                  }
-                  variant={
-                    formData.reflex_testing.includes(reflex)
-                      ? 'filled'
-                      : 'outlined'
-                  }
-                  size="small"
-                />
-              ))}
-            </Box>
-          </Grid>
-
           {/* Palpation Assessment */}
           <Grid item xs={12}>
             <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
@@ -894,46 +845,890 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
               rows={2}
             />
           </Grid>
+        </Grid>
 
-          {/* Posture Assessment */}
+        <Divider sx={{ my: 3 }} />
+        {/* Physical Examination */}
+        <Typography variant="h5" gutterBottom>
+          Physical Examination
+        </Typography>
+        <Grid container spacing={2}>
+          {/* Strength Assessment */}
           <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-              Posture Assessment
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              Strength
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {postureOptions.map((posture) => (
-                <Chip
-                  key={posture}
-                  label={posture}
-                  onClick={() =>
-                    handleArrayToggle('posture_assessment', posture)
-                  }
-                  color={
-                    formData.posture_assessment.includes(posture)
-                      ? 'primary'
-                      : 'default'
-                  }
-                  variant={
-                    formData.posture_assessment.includes(posture)
-                      ? 'filled'
-                      : 'outlined'
-                  }
-                  size="small"
-                />
-              ))}
-            </Box>
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell></TableCell>
+                    <TableCell align="center">Right</TableCell>
+                    <TableCell align="center">Left</TableCell>
+                    <TableCell align="center">Remark</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {/* Elbow flexion */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">Elbow flex.</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.strength_elbow_flex_right || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'strength_elbow_flex_right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {strengthOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.strength_elbow_flex_left || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'strength_elbow_flex_left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {strengthOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="small"
+                        value={formData.strength_elbow_flex_remark || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'strength_elbow_flex_remark',
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Remark"
+                        fullWidth
+                      />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Finger abduction */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">Finger add</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.strength_finger_add_right || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'strength_finger_add_right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {strengthOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.strength_finger_add_left || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'strength_finger_add_left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {strengthOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="small"
+                        value={formData.strength_finger_add_remark || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'strength_finger_add_remark',
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Remark"
+                        fullWidth
+                      />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Finger flexion (Kg) */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">Finger flex(Kg)</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="small"
+                        type="number"
+                        value={formData.strength_finger_flex_right || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'strength_finger_flex_right',
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Kg"
+                        sx={{ width: 100 }}
+                        InputProps={{
+                          endAdornment: (
+                            <Typography variant="body2" sx={{ ml: 0.5 }}>
+                              Kg
+                            </Typography>
+                          ),
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="small"
+                        type="number"
+                        value={formData.strength_finger_flex_left || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'strength_finger_flex_left',
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Kg"
+                        sx={{ width: 100 }}
+                        InputProps={{
+                          endAdornment: (
+                            <Typography variant="body2" sx={{ ml: 0.5 }}>
+                              Kg
+                            </Typography>
+                          ),
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="small"
+                        value={formData.strength_finger_flex_remark || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'strength_finger_flex_remark',
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Remark"
+                        fullWidth
+                      />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Shoulder abduction */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">Shoulder abd.</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.strength_shoulder_abd_right || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'strength_shoulder_abd_right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {strengthOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.strength_shoulder_abd_left || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'strength_shoulder_abd_left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {strengthOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="small"
+                        value={formData.strength_shoulder_abd_remark || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'strength_shoulder_abd_remark',
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Remark"
+                        fullWidth
+                      />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Wrist extension */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">Wrist ext.</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.strength_wrist_ext_right || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'strength_wrist_ext_right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {strengthOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.strength_wrist_ext_left || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'strength_wrist_ext_left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {strengthOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="small"
+                        value={formData.strength_wrist_ext_remark || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'strength_wrist_ext_remark',
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Remark"
+                        fullWidth
+                      />
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Wrist flexion */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">Wrist flex.</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.strength_wrist_flex_right || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'strength_wrist_flex_right',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {strengthOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={formData.strength_wrist_flex_left || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'strength_wrist_flex_left',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          {strengthOptions.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="small"
+                        value={formData.strength_wrist_flex_remark || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'strength_wrist_flex_remark',
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Remark"
+                        fullWidth
+                      />
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {/* General Remark Field */}
             <TextField
               fullWidth
-              label="Posture Assessment Remark"
-              value={formData.posture_assessment_remark}
+              label="Remark"
+              value={formData.strength_remark}
               onChange={(e) =>
-                handleInputChange('posture_assessment_remark', e.target.value)
+                handleInputChange('strength_remark', e.target.value)
               }
               multiline
               rows={2}
+              sx={{ mt: 1 }}
             />
           </Grid>
+        </Grid>
 
+        <Divider sx={{ my: 3 }} />
+
+        {/* Muscle Flexibility */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
+            Muscle Flexibility
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
+            These structures presented tender when elongated
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableBody>
+                {/* Upp. Trap */}
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                    <Typography variant="body2">Upp. Trap</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={formData.muscle_flexibility_upper_trap || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'muscle_flexibility_upper_trap',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {tendernessOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+
+                {/* Lev. Scap */}
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                    <Typography variant="body2">Lev. Scap</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={formData.muscle_flexibility_lev_scap || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'muscle_flexibility_lev_scap',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {tendernessOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+
+                {/* SCM */}
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                    <Typography variant="body2">SCM</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={formData.muscle_flexibility_scm || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'muscle_flexibility_scm',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {tendernessOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+
+                {/* Superior trapezius */}
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                    <Typography variant="body2">Superior trapezius</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={
+                          formData.muscle_flexibility_superior_trapezius || ''
+                        }
+                        onChange={(e) =>
+                          handleInputChange(
+                            'muscle_flexibility_superior_trapezius',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {tendernessOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+
+                {/* Scalen */}
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                    <Typography variant="body2">Scalen</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={formData.muscle_flexibility_scalen || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'muscle_flexibility_scalen',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {tendernessOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+
+                {/* Infraspinatus */}
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                    <Typography variant="body2">Infraspinatus</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={formData.muscle_flexibility_infraspinatus || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'muscle_flexibility_infraspinatus',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {tendernessOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+
+                {/* Supraspinatus */}
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                    <Typography variant="body2">Supraspinatus</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={formData.muscle_flexibility_supraspinatus || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'muscle_flexibility_supraspinatus',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {tendernessOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+
+                {/* Suboccipital muscle */}
+                <TableRow>
+                  <TableCell component="th" scope="row" sx={{ width: '40%' }}>
+                    <Typography variant="body2">Suboccipital muscle</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={formData.muscle_flexibility_suboccipital || ''}
+                        onChange={(e) =>
+                          handleInputChange(
+                            'muscle_flexibility_suboccipital',
+                            e.target.value,
+                          )
+                        }
+                        displayEmpty
+                      >
+                        <MenuItem value="">
+                          <em>-Select-</em>
+                        </MenuItem>
+                        {tendernessOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TextField
+            fullWidth
+            label="Remark"
+            value={formData.muscle_flexibility_remark}
+            onChange={(e) =>
+              handleInputChange('muscle_flexibility_remark', e.target.value)
+            }
+            size="small"
+            sx={{ mt: 1 }}
+            multiline
+            rows={2}
+          />
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Special Tests */}
+        <Typography variant="h5" gutterBottom>
+          Special Tests
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Test</TableCell>
+                    <TableCell align="center">Result</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {/* Cervical Compression */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">
+                        Cervical Compression
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.cervical_compression || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'cervical_compression',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="positive">Positive</MenuItem>
+                          <MenuItem value="negative">Negative</MenuItem>
+                          <MenuItem value="not_tested">Not Tested</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Cervical Distraction */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">
+                        Cervical Distraction
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.cervical_distraction || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'cervical_distraction',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="positive">Positive</MenuItem>
+                          <MenuItem value="negative">Negative</MenuItem>
+                          <MenuItem value="not_tested">Not Tested</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Cranial Nerve Test */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">
+                        Cranial Nerve Test
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests?.cranial_nerve_test || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'cranial_nerve_test',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="normal">Normal</MenuItem>
+                          <MenuItem value="abnormal">Abnormal</MenuItem>
+                          <MenuItem value="not_tested">Not Tested</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Thoracic T123 Restricted rotation */}
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      <Typography variant="body2">
+                        Thoracic T123 Restricted rotation
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={
+                            formData.special_tests
+                              ?.thoracic_restricted_rotation || ''
+                          }
+                          onChange={(e) =>
+                            handleSpecialTestResult(
+                              'thoracic_restricted_rotation',
+                              e.target.value,
+                            )
+                          }
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>-Select-</em>
+                          </MenuItem>
+                          <MenuItem value="present">Present</MenuItem>
+                          <MenuItem value="absent">Absent</MenuItem>
+                          <MenuItem value="not_tested">Not Tested</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {/* Remark Field */}
+            <TextField
+              fullWidth
+              label="Remark"
+              value={formData.special_tests_remark}
+              onChange={(e) =>
+                handleInputChange('special_tests_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              sx={{ mt: 1 }}
+            />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Functional Status */}
+        <Typography variant="h5" gutterBottom>
+          Functional Status
+        </Typography>
+        <Grid container spacing={2}>
           <Grid item xs={12}>
             <Box
               sx={{
@@ -943,23 +1738,79 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
                 mb: 1,
               }}
             >
-              <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-                Clinical Impressions
+              <Typography variant="subtitle2">
+                Functional Limitations
               </Typography>
               <Button
                 startIcon={<AddIcon />}
-                onClick={() => toggleRemark('clinicalImpression')}
+                onClick={() => toggleRemark('functionalLimitations')}
                 size="small"
                 variant="outlined"
               >
                 Other
               </Button>
             </Box>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+              {functionalLimitations.map((limitation) => (
+                <Chip
+                  key={limitation}
+                  label={limitation}
+                  onClick={() =>
+                    handleArrayToggle('functional_limitations_adl', limitation)
+                  }
+                  color={
+                    formData.functional_limitations_adl.includes(limitation)
+                      ? 'primary'
+                      : 'default'
+                  }
+                  variant="outlined"
+                  size="small"
+                />
+              ))}
+            </Box>
+            <Collapse in={showRemarks.functionalLimitations}>
+              <TextField
+                fullWidth
+                label="Functional Limitations Remark"
+                value={formData.functional_limitations_adl_remark}
+                onChange={(e) =>
+                  handleInputChange(
+                    'functional_limitations_adl_remark',
+                    e.target.value,
+                  )
+                }
+                multiline
+                rows={2}
+              />
+            </Collapse>
+          </Grid>
+        </Grid>
+        <Divider sx={{ my: 3 }} />
+
+        {/* Clinical Impressions */}
+        <Typography variant="h5" gutterBottom>
+          Clinical Impressions
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
             <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
               Mechanical deficits/Impairments found on examination
             </Typography>
+
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {clinicalImpressionOptions.map((impression) => (
+              {[
+                'Postural imbalance',
+                'Decreased AROM',
+                'Decreased passive intervertebral motion',
+                'Hypermobility on passive intervertebral motion',
+                'Decreased strength of cervical and UQ muscles',
+                'Hypertonic upper quarter musculature',
+                'Adaptive shortening of muscles',
+                'Adverse neural tension',
+                'Decreased facet joint mobility',
+                'Decreased mobility upper thoracic spine',
+                'Restricted mobility suboccipital',
+              ].map((impression) => (
                 <Chip
                   key={impression}
                   label={impression}
@@ -980,136 +1831,41 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
                 />
               ))}
             </Box>
-            <Collapse in={showRemarks.clinicalImpression}>
-              <TextField
-                fullWidth
-                label="Clinical Impression Remark"
-                value={formData.clinical_impression_remark}
-                onChange={(e) =>
-                  handleInputChange(
-                    'clinical_impression_remark',
-                    e.target.value,
-                  )
-                }
-                multiline
-                rows={2}
-                placeholder="Specify other clinical impressions..."
-              />
-            </Collapse>
-          </Grid>
 
-          <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 2 }}>
-              Special Tests
-            </Typography>
-            <Grid container spacing={1}>
-              {specialTests.map((test) => (
-                <Grid item xs={12} sm={6} key={test.name}>
-                  <Box
-                    sx={{
-                      border: 1,
-                      borderColor: 'divider',
-                      p: 1,
-                      borderRadius: 1,
-                    }}
-                  >
-                    <Box
-                      sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}
-                    >
-                      <Typography variant="body2" sx={{ flexGrow: 1 }}>
-                        {test.name}
-                      </Typography>
-                      <Tooltip title={test.description}>
-                        <IconButton size="small">
-                          <InfoIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                    <RadioGroup
-                      row
-                      value={formData.special_tests[test.name] || ''}
-                      onChange={(e) =>
-                        handleSpecialTestResult(test.name, e.target.value)
-                      }
-                    >
-                      {['Positive', 'Negative', 'Not Tested'].map((opt) => (
-                        <FormControlLabel
-                          key={opt}
-                          value={opt}
-                          control={<Radio size="small" />}
-                          label={opt}
-                        />
-                      ))}
-                    </RadioGroup>
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
-              }}
-            >
-              <Typography variant="subtitle2" sx={{ mt: 2 }}>
-                Observations
-              </Typography>
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() => toggleRemark('observations')}
-                size="small"
-                variant="outlined"
-              >
-                Other
-              </Button>
-            </Box>
-            <FormGroup row>
-              {[
-                'Swelling Present',
-                'Muscle Spasm',
-                'Deformity Present',
-                'Muscle Atrophy',
-                'Skin Changes',
-              ].map((label) => (
-                <FormControlLabel
-                  key={label}
-                  control={
-                    <Checkbox
-                      checked={formData.observation.includes(label)}
-                      onChange={() => handleArrayToggle('observation', label)}
-                    />
-                  }
-                  label={label}
-                />
-              ))}
-            </FormGroup>
-            <Collapse in={showRemarks.observation}>
-              <TextField
-                fullWidth
-                label="Observation Remark"
-                value={formData.observation_remark}
-                onChange={(e) =>
-                  handleInputChange('observation_remark', e.target.value)
-                }
-                multiline
-                rows={2}
-                sx={{ mt: 1 }}
-              />
-            </Collapse>
+            <TextField
+              fullWidth
+              label="Remark"
+              value={formData.clinical_impression_remark}
+              onChange={(e) =>
+                handleInputChange('clinical_impression_remark', e.target.value)
+              }
+              multiline
+              rows={2}
+              placeholder="Additional clinical impressions..."
+            />
           </Grid>
         </Grid>
 
         <Divider sx={{ my: 3 }} />
-
-        {/* Assessment & Plan */}
         <Typography variant="h5" sx={{ mb: 2 }} gutterBottom>
-          Assessment & Plan
+          Medical Diagnosis
         </Typography>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Medical Diagnosis"
+            value={formData.medical_diagnosis}
+            onChange={(e) =>
+              handleInputChange('medical_diagnosis', e.target.value)
+            }
+            multiline
+            rows={2}
+            required
+          />
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Box
@@ -1120,61 +1876,7 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
                 mb: 1,
               }}
             >
-              <Typography variant="subtitle2">Assessment Plan</Typography>
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() => toggleRemark('assessmentPlan')}
-                size="small"
-                variant="outlined"
-              >
-                Other
-              </Button>
-            </Box>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-              {AssessmentOptions.map((assessment) => {
-                const selected =
-                  formData.clinical_impression.includes(assessment);
-                return (
-                  <Chip
-                    key={assessment}
-                    label={assessment}
-                    onClick={() =>
-                      handleArrayToggle('clinical_impression', assessment)
-                    }
-                    color={selected ? 'primary' : 'default'}
-                    variant={selected ? 'filled' : 'outlined'}
-                    size="small"
-                  />
-                );
-              })}
-            </Box>
-            <Collapse in={showRemarks.assessmentPlan}>
-              <TextField
-                fullWidth
-                label="Assessment Plan Remark"
-                value={formData.clinical_impression_remark}
-                onChange={(e) =>
-                  handleInputChange(
-                    'clinical_impression_remark',
-                    e.target.value,
-                  )
-                }
-                multiline
-                rows={2}
-              />
-            </Collapse>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
-              }}
-            >
-              <Typography variant="subtitle2">Treatment Plan</Typography>
+              <Typography variant="subtitle1">Treatment Plan</Typography>
               <Button
                 startIcon={<AddIcon />}
                 onClick={() => toggleRemark('treatmentPlan')}
@@ -1223,20 +1925,6 @@ const AddCervical = ({ open, isSubmitting, onClose, onSubmit, visit }) => {
                 handleInputChange('short_term_goal', e.target.value)
               }
               placeholder="Reduce pain by 50%, Improve neck ROM, Restore functional activities..."
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Precautions & Contraindications"
-              value={formData.precautions_and_contraindications}
-              onChange={(e) =>
-                handleInputChange(
-                  'precautions_and_contraindications',
-                  e.target.value,
-                )
-              }
-              placeholder="Avoid heavy lifting, No high-velocity manipulation, Postural awareness..."
             />
           </Grid>
         </Grid>

@@ -10,7 +10,6 @@ import {
   Grow,
 } from '@mui/material';
 import TabPanel from 'ui-component/tabs/TabPanel';
-import { useTheme } from '@emotion/react';
 import { a11yProps } from 'utils/function';
 import MenuIcon from '@mui/icons-material/Menu';
 import { AntTab, AntTabs, OrderTabData } from './OrdertantTabs';
@@ -23,6 +22,7 @@ import MedicinesTab from './medicines/MedicinesTab';
 import LaboratoryDoctorTab from './LaboratoryDoctorTab';
 import RadiologyTab from './RadiologyTab';
 import RadiologyDoctorTab from './RadiologyDoctorTab';
+import { useTheme } from '@mui/system';
 
 const OrderTab = ({ visit, goToResults }) => {
   const [value, setValue] = React.useState(0);

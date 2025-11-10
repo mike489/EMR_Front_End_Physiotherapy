@@ -20,6 +20,19 @@ const GlassesTab = ({ visit }) => {
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editOrder, setEditOrder] = useState(null);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: 0,
+    per_page: 10,
+    last_page: 0,
+    total: 0,
+  });
+  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState({
+    date: null,
+  });
+  const [error, setError] = useState(false);
 
   const fetchGlassesOrders = async () => {
     const token = await GetToken();
@@ -43,6 +56,61 @@ const GlassesTab = ({ visit }) => {
       toast.error('Error fetching glasses orders: ' + error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFetchingVisitPatients = async () => {
+    setDataLoading(true);
+    const token = await GetToken();
+
+    const params = new URLSearchParams();
+    params.append('page', pagination.page + 1);
+    params.append('per_page', pagination.per_page);
+
+    if (search) params.append('search', search);
+    if (filters.date) {
+      params.append('date', format(new Date(filters.date), 'yyyy-MM-dd'));
+    }
+
+    const Api = `${Backend.auth}${Backend.getVisits}?${params.toString()}`;
+    const header = {
+      Authorization: `Bearer ${token}`,
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      const response = await fetch(Api, { method: 'GET', headers: header });
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          responseData?.data?.message ||
+            responseData?.message ||
+            'Failed to fetch visits',
+        );
+      }
+
+      if (responseData.success) {
+        setData(responseData.data.data);
+        setPagination({
+          ...pagination,
+          last_page: responseData.data.last_page,
+          total: responseData.data.total,
+        });
+        setError(false);
+      } else {
+        toast.warning(
+          responseData?.data?.message ||
+            responseData?.message ||
+            'Failed to fetch visits',
+        );
+      }
+    } catch (error) {
+      toast.error('An error occurred');
+      setError(true);
+    } finally {
+      setDataLoading(false);
     }
   };
 
@@ -145,6 +213,7 @@ const GlassesTab = ({ visit }) => {
     fetchGlassesOrders();
     fetchLensTypes();
     fetchLensMaterials();
+    handleFetchingVisitPatients();
   }, []);
 
   if (loading) {
@@ -234,11 +303,13 @@ const GlassesTab = ({ visit }) => {
                 description: '',
               }
             }
-            visits={visit}
+            visits={data}
             lensTypes={lensTypes}
             lensMaterials={lensMaterials}
             onSubmit={handleSubmit}
             onCancel={() => setFormOpen(false)}
+            dataLoading={dataLoading}
+            data={data}
           />
         </Box>
       </Modal>

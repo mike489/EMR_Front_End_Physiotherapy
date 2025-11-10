@@ -301,7 +301,7 @@ const ElboTab = ({ visit }) => {
         mb={2}
       >
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
-          Elbow Assessments
+          Elbow, Wrist & Hand Assessments
         </Typography>
         <IconButton
           color="primary"

@@ -1,29 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   CircularProgress,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Button,
-  Grid,
-  MenuItem,
+  Pagination,
   Select,
-  InputLabel,
-  FormControl,
-} from "@mui/material";
-import { toast, ToastContainer } from "react-toastify";
-import ReferralTable from "./components/ReferralTable";
-import Backend from "services/backend";
-import GetToken from "utils/auth-token";
-import PageContainer from "ui-component/MainPage";
-import hasPermission from "utils/auth/hasPermission";
-import { Add } from "@mui/icons-material";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+  MenuItem,
+  Typography,
+} from '@mui/material';
+import { toast, ToastContainer } from 'react-toastify';
+import { Add } from '@mui/icons-material';
+import Backend from 'services/backend';
+import GetToken from 'utils/auth-token';
+import hasPermission from 'utils/auth/hasPermission';
+import PageContainer from 'ui-component/MainPage';
+import ReferralTable from './components/ReferralTable';
+import ReferralForm from './components/ReferralForm';
+
+const stripHtml = (html) => {
+  if (!html) return null;
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  const text = div.textContent || div.innerText || '';
+  return text.trim().slice(0, 1000);
+};
 
 export default function ReferralIndex() {
   const [referrals, setReferrals] = useState([]);
@@ -33,36 +33,53 @@ export default function ReferralIndex() {
   const [openDialog, setOpenDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedReferral, setSelectedReferral] = useState(null);
+  const [medicalCenters, setMedicalCenters] = useState([]);
+
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [formData, setFormData] = useState({
-    patient_id: "",
-    to_doctor_id: "",
-    reason: "",
+    patient_id: '',
+    from_id: '',
+    reason: '',
+    history_exam: '',
+    physiotherapy_diagnosis: '',
+    medical_diagnosis: '',
+    treatment_given: '',
   });
 
-  // ======================
-  // Fetch Data
-  // ======================
+  /* --------------------------------------------------------------------- */
+  // FETCH REFERRALS with pagination + type=internal
+  /* --------------------------------------------------------------------- */
   const fetchReferrals = async () => {
     const token = await GetToken();
-    const Api = `${Backend.auth}${Backend.referrals}`;
+    const Api = `${Backend.auth}${Backend.getReferralsIn}?type=internal&page=${page}&per_page=${perPage}`;
     const headers = {
       Authorization: `Bearer ${token}`,
-      accept: "application/json",
-      "Content-Type": "application/json",
+      accept: 'application/json',
+      'Content-Type': 'application/json',
     };
 
     try {
       setLoading(true);
-      const res = await fetch(Api, { method: "GET", headers });
+      const res = await fetch(Api, { method: 'GET', headers });
       const data = await res.json();
+
       if (data.success) {
-        setReferrals(data.data?.data || data.data || []);
+        const refData =
+          data.data?.data?.data || data.data?.data || data.data || [];
+        setReferrals(refData);
+
+        // Handle pagination info (Laravel-style or custom)
+        const pagination = data.data?.data || data.data || {};
+        setTotalPages(pagination.last_page || 1);
       } else {
-        toast.warning("Failed to fetch referrals");
+        toast.warning('Failed to fetch referrals');
       }
     } catch (error) {
-      toast.error(error.message || "Error fetching referrals");
+      toast.error('Error fetching referrals');
     } finally {
       setLoading(false);
     }
@@ -72,276 +89,213 @@ export default function ReferralIndex() {
     try {
       const token = await GetToken();
       const Api = `${Backend.auth}${Backend.patients}`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        accept: "application/json",
-        "Content-Type": "application/json",
-      };
-      const response = await fetch(Api, { method: "GET", headers });
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await fetch(Api, { method: 'GET', headers });
       const data = await response.json();
-      if (data.success) {
-        setPatients(data.data?.data || data.data || []);
-      } else {
-        toast.warning("Failed to fetch patients");
-      }
-    } catch (error) {
-      toast.error("Error fetching patients");
+      if (data.success) setPatients(data.data?.data || data.data || []);
+    } catch {
+      toast.error('Error fetching patients');
     }
   };
 
-  const fetchDoctors = async () => {
+  const fetchMedicalCenters = async () => {
     try {
       const token = await GetToken();
-      const Api = `${Backend.auth}${Backend.getDoctors}`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        accept: "application/json",
-        "Content-Type": "application/json",
-      };
-      const response = await fetch(Api, { method: "GET", headers });
-      const data = await response.json();
-      if (data.success) {
-        setDoctors(data.data?.data || data.data || []);
+      const Api = `${Backend.auth}${Backend.allMedicalCenter}`;
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await fetch(Api, { method: 'GET', headers });
+      const data = await res.json();
+
+      if (data.success && Array.isArray(data.data)) {
+        setMedicalCenters(data.data); // ✅ this matches your response
       } else {
-        toast.warning("Failed to fetch doctors");
+        setMedicalCenters([]);
+        toast.warning('No medical centers found');
       }
     } catch (error) {
-      toast.error("Error fetching doctors");
+      toast.error('Error fetching medical centers: ' + error.message);
     }
   };
 
   useEffect(() => {
     fetchReferrals();
+  }, [page, perPage]);
+
+  useEffect(() => {
     fetchPatients();
-    fetchDoctors();
+    fetchMedicalCenters();
   }, []);
 
-  // ======================
-  // Dialog handlers
-  // ======================
+  /* --------------------------------------------------------------------- */
+  // DIALOG HANDLERS
+  /* --------------------------------------------------------------------- */
   const handleOpenDialog = (referral = null) => {
     if (referral) {
       setEditMode(true);
       setSelectedReferral(referral);
       setFormData({
-        patient_id: referral.patient?.id || "",
-        to_doctor_id: referral.to_doctor?.id || "",
-        reason: referral.reason || "",
+        patient_id: referral.patient?.id || '',
+        from_id: referral.medical_center?.id || '',
+        reason: referral.reason || '',
+        history_exam: referral.history_exam || '',
+        physiotherapy_diagnosis: referral.physiotherapy_diagnosis || '',
+        medical_diagnosis: referral.medical_diagnosis || '',
+        treatment_given: referral.treatment_given || '',
       });
     } else {
       setEditMode(false);
-      setFormData({ patient_id: "", to_doctor_id: "", reason: "" });
-      setSelectedReferral(null);
+      setFormData({
+        patient_id: '',
+        from_id: '',
+        reason: '',
+        history_exam: '',
+        physiotherapy_diagnosis: '',
+        medical_diagnosis: '',
+        treatment_given: '',
+      });
     }
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setFormData({ patient_id: "", to_doctor_id: "", reason: "" });
     setEditMode(false);
     setSelectedReferral(null);
   };
 
-  // ======================
-  // Submit handler
-  // ======================
+  /* ---------------------------------------------------------- */
+  /* Submit Handler                                              */
+  /* ---------------------------------------------------------- */
   const handleSubmit = async () => {
-    if (!formData.patient_id || !formData.to_doctor_id || !formData.reason) {
-      toast.warning("Please fill all required fields");
-      return;
+    const {
+      patient_id,
+      from_id,
+      reason,
+      history_exam,
+      physiotherapy_diagnosis,
+      medical_diagnosis,
+      treatment_given,
+    } = formData;
+
+    if (!patient_id || !from_id || !reason) {
+      return toast.warning('Please fill all required fields');
     }
+
+    const payload = {
+      patient_id,
+      from_id,
+      reason,
+      history_exam,
+      physiotherapy_diagnosis,
+      medical_diagnosis,
+      treatment_given,
+    };
 
     const token = await GetToken();
     const Api = editMode
-      ? `${Backend.auth}${Backend.referrals}/${selectedReferral.id}`
-      : `${Backend.auth}${Backend.referrals}`;
+      ? `${Backend.auth}${Backend.createReferralsIn}/${selectedReferral.id}`
+      : `${Backend.auth}${Backend.createReferralsIn}`;
     const headers = {
       Authorization: `Bearer ${token}`,
-      accept: "application/json",
-      "Content-Type": "application/json",
-    };
-
-    const payload = {
-      patient_id: formData.patient_id,
-      to_doctor_id: formData.to_doctor_id,
-      reason: formData.reason,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     };
 
     try {
       setLoading(true);
       const response = await fetch(Api, {
-        method: editMode ? "PUT" : "POST",
+        method: editMode ? 'PUT' : 'POST',
         headers,
         body: JSON.stringify(payload),
       });
+
       const data = await response.json();
+
       if (data.success) {
-        toast.success(
-          editMode
-            ? "Referral updated successfully!"
-            : "Referral added successfully!"
-        );
+        toast.success(editMode ? 'Referral updated!' : 'Referral created!');
         fetchReferrals();
         handleCloseDialog();
       } else {
-        toast.warning(data.data.message || "Operation failed");
+        toast.warning(data.data.message || 'Operation failed');
       }
     } catch (error) {
-      toast.error(error.message || "Error submitting referral");
+      toast.error('Network error: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
-
-  // ======================
-  // Delete Referral
-  // ======================
-  const handleDelete = async (id) => {
-    const token = await GetToken();
-    const Api = `${Backend.auth}${Backend.referrals}/${id}`;
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      accept: "application/json",
-      "Content-Type": "application/json",
-    };
-
-    try {
-      const response = await fetch(Api, { method: "DELETE", headers });
-      const data = await response.json();
-      if (data.success) {
-        toast.success("Referral deleted successfully!");
-        fetchReferrals();
-      } else {
-        toast.warning(data.message || "Failed to delete referral");
-      }
-    } catch (error) {
-      toast.error(error.message || "Error deleting referral");
-    }
-  };
-
-  // ======================
-  // Loading Spinner
-  // ======================
+  /* --------------------------------------------------------------------- */
+  // RENDER
+  /* --------------------------------------------------------------------- */
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
         <CircularProgress />
       </Box>
     );
   }
 
-  // ======================
-  // Render
-  // ======================
   return (
     <PageContainer
-      title="Referral Management"
+      title="Referrals In"
       maxWidth="lg"
       sx={{ mt: 4, mb: 4 }}
       rightOption={
-        hasPermission("create_referral") && (
-          <Box display="flex" alignItems="center" gap={2}>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              sx={{ borderRadius: 2, textTransform: "none" }}
-              onClick={() => handleOpenDialog()}
-            >
-              Add Referral
-            </Button>
-          </Box>
+        hasPermission('create_referral') && (
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => handleOpenDialog()}
+          >
+            Add Referral
+          </Button>
         )
       }
     >
       <ReferralTable
         referrals={referrals}
         onEdit={(ref) => handleOpenDialog(ref)}
-        onDelete={(id) => handleDelete(id)}
+        onDelete={() => {}}
       />
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
-        <DialogTitle>
-          {editMode ? "Edit Referral" : "Add Referral"}
-        </DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Patient</InputLabel>
-                <Select
-                  label="Patient"
-                  value={formData.patient_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, patient_id: e.target.value })
-                  }
-                >
-                  {patients.length > 0 ? (
-                    patients.map((patient) => (
-                      <MenuItem key={patient.id} value={patient.id}>
-                        {patient.full_name || patient.name}
-                      </MenuItem>
-                    ))
-                  ) : (
-                    <MenuItem disabled>No patients found</MenuItem>
-                  )}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Doctor</InputLabel>
-                <Select
-                  label="Doctor"
-                  value={formData.to_doctor_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, to_doctor_id: e.target.value })
-                  }
-                >
-                  {doctors.length > 0 ? (
-                    doctors.map((doctor) => (
-                      <MenuItem key={doctor.id} value={doctor.id}>
-                        {doctor.full_name || doctor.name}
-                      </MenuItem>
-                    ))
-                  ) : (
-                    <MenuItem disabled>No doctors found</MenuItem>
-                  )}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Reason for Referral
-              </Typography>
-              <ReactQuill
-                theme="snow"
-                value={formData.reason}
-                onChange={(value) =>
-                  setFormData({ ...formData, reason: value })
-                }
-                style={{ height: "200px", marginBottom: "50px" }}
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            disabled={
-              !formData.patient_id || !formData.to_doctor_id || !formData.reason
-            }
+      {/* Pagination controls */}
+      <Box
+        sx={{ display: 'flex', justifyContent: 'space-between', mt: 3, px: 8 }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="body2">Rows per page:</Typography>
+          <Select
+            value={perPage}
+            onChange={(e) => setPerPage(e.target.value)}
+            size="small"
           >
-            {editMode ? "Update" : "Add"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <ToastContainer/>
+            {[5, 10, 20, 50].map((n) => (
+              <MenuItem key={n} value={n}>
+                {n}
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => setPage(value)}
+          color="primary"
+        />
+      </Box>
+
+      <ReferralForm
+        open={openDialog}
+        onClose={handleCloseDialog}
+        onSubmit={handleSubmit}
+        editMode={editMode}
+        formData={formData}
+        setFormData={setFormData}
+        patients={patients}
+        medicalCenters={medicalCenters}
+      />
+
+      <ToastContainer />
     </PageContainer>
   );
 }

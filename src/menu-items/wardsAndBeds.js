@@ -4,10 +4,8 @@
 // const icons = {
 //   IconCalendarClock,
 
-
 // };
 // import getRolesAndPermissionsFromToken from 'utils/auth/getRolesAndPermissionsFromToken';
-
 
 // // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -40,17 +38,21 @@
 
 // assets
 import {
-IconCalendarClock,IconStethoscope, IconBed, IconBedFilled, IconAmbulance
+  IconCalendarClock,
+  IconStethoscope,
+  IconBed,
+  IconBedFilled,
+  IconAmbulance,
 } from '@tabler/icons-react';
 import getRolesAndPermissionsFromToken from 'utils/auth/getRolesAndPermissionsFromToken';
 
 // constant
 const icons = {
   IconCalendarClock,
-IconStethoscope,
-IconBed,
-IconBedFilled,
-IconAmbulance
+  IconStethoscope,
+  IconBed,
+  IconBedFilled,
+  IconAmbulance,
 };
 
 // ==============================|| Kpi_basic_config  MENU ITEMS ||============================== //
@@ -61,11 +63,7 @@ export const WardsAndBeds = () => {
   const childrenTemp = [];
   const addedPermissions = new Set();
 
-  const orderedPermissions = [
-    'read_ward',
-    'read_bed'
-  
-  ];
+  const orderedPermissions = ['read_ward', 'read_bed', 'read_bed_assignment'];
 
   const permissionMap = {
     read_ward: {
@@ -80,7 +78,12 @@ export const WardsAndBeds = () => {
       url: '/beds',
       icon: icons.IconBedFilled,
     },
-   
+    read_bed_assignment: {
+      id: 'bed-lists',
+      title: 'Patient Beds Lists',
+      url: '/bed-lists',
+      icon: icons.IconBedFilled,
+    },
   };
 
   if (auth) {
@@ -105,12 +108,11 @@ export const WardsAndBeds = () => {
     });
   }
 
-    return {
+  return {
     id: 'wards-and-beds',
     title: 'Bed & room management',
     type: 'group',
     icon: IconBed,
     children: childrenTemp,
-
   };
 };

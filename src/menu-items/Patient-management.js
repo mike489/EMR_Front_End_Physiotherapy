@@ -52,14 +52,14 @@ export const PatientManagement = () => {
       icon: icons.IconUserPlus,
     },
     read_room: {
-      id: 'Active patients',
-      title: 'Active Patients',
+      id: 'New patients',
+      title: 'New Patients',
       url: '/active_patients',
       icon: icons.IconUsersGroup,
     },
     read_lens_type: {
-      id: 'visit-patients',
-      title: 'Visit patients',
+      id: 'follow-up-patients',
+      title: 'Follow Up patients',
       url: '/visit_patients',
       icon: icons.IconUsersGroup,
     },

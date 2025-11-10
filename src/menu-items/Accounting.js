@@ -84,6 +84,12 @@ export const Accounting = () => {
       url: '/billing_and_payments',
       icon: icons.IconWorldWww,
     },
+    read_payment_setting: {
+      id: 'payment_requests',
+      title: 'Payment Requests',
+      url: '/payment_request',
+      icon: icons.IconWorldWww,
+    },
   };
 
   if (auth) {

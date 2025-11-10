@@ -192,7 +192,7 @@ const RegisterPatient = ({
     national_id: patient.national_id || '',
     passport_number: patient.passport_number || '',
     patient_category: patient.patient_category || 'regular',
-    payment_method: ['self pay', 'credit'].includes(
+    payment_method: ['self pay', 'credit', 'social'].includes(
       paymentDetails?.payment_method,
     )
       ? paymentDetails.payment_method
@@ -617,6 +617,7 @@ const RegisterPatient = ({
                     <Select {...field} label="Payment Method *">
                       <MenuItem value="self pay">Self Pay</MenuItem>
                       <MenuItem value="credit">Credit</MenuItem>
+                      <MenuItem value="social">Social</MenuItem>
                     </Select>
                     <Typography variant="caption" color="error">
                       {errors.payment_method?.message}
@@ -739,7 +740,6 @@ const RegisterPatient = ({
                     <Select {...field} label="Visit Type">
                       <MenuItem value="Consultation">Consultation</MenuItem>
                       <MenuItem value="Optometry">Optometry</MenuItem>
-                      <MenuItem value="Physiotherapy">Physiotherapy</MenuItem>
                       <MenuItem value="General">General / Medical</MenuItem>
                     </Select>
                     <Typography variant="caption" color="error">
@@ -862,7 +862,7 @@ RegisterPatient.propTypes = {
   onCancel: PropTypes.func.isRequired,
   isCardExpired: PropTypes.bool.isRequired,
   paymentDetails: PropTypes.shape({
-    payment_method: PropTypes.oneOf(['self pay', 'credit']),
+    payment_method: PropTypes.oneOf(['self pay', 'credit', 'social']),
     amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     responsible_payer_name: PropTypes.string,
     responsible_payer_contact: PropTypes.string,

@@ -20,12 +20,9 @@ const PatientTabs = ({ patient }) => {
   };
 
   const tabComponents = {
-    ComplaintTab: <ComplaintTab patient={patient} />,
-    OcularHistoryTab: <OcularHistoryTab patient={patient} />,
     PatientInformationTab: <PatientInformationTab patient={patient} />,
     PaymentList: <PaymentList patient={patient} />,
     PatientVisits: <PatientVisits patient={patient} />,
-    // MedicalHistoryTab: <MedicalHistoryTab patient={patient} />,
   };
 
   return (

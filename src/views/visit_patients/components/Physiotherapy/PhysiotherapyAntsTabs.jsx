@@ -47,7 +47,7 @@ export const AntTab = styled((props) => <Tab disableRipple {...props} />)(
 
 export const PhysiotherapyTabData = [
   hasPermission('read_complaint') && {
-    label: 'Elbow',
+    label: 'Elbow, Wrist & Hand',
     component: 'ElboTab',
   },
 
@@ -83,10 +83,7 @@ export const PhysiotherapyTabData = [
     label: 'Thoracic',
     component: 'ThoracicTab',
   },
-  // hasPermission('read_initial_impression') && {
-  //   label: 'Foot',
-  //   component: 'FootTab',
-  // },
+
   hasPermission('read_initial_impression') && {
     label: 'Knee',
     component: 'KneeTab',

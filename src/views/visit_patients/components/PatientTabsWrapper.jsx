@@ -70,11 +70,7 @@ const PatientTabsWrapper = ({ patient }) => {
     //   component: <ResultTab visit={patient} />,
     //   show: true,
     // },
-    {
-      label: 'Next Visit Appointment',
-      component: <AppointmentTab visit={patient} />,
-      show: true,
-    },
+
     // {
     //   label: 'Care Plan',
     //   component: <CarePlanTab visit={patient} />,
